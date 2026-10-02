@@ -1,0 +1,19 @@
+# Maven build
+target/
+*.class
+
+# SQLite database
+*.db
+*.db-journal
+
+# IDE configuration
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS generated files
+.DS_Store
+Thumbs.db
