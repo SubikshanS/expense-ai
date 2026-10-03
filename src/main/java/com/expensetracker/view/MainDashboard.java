@@ -178,7 +178,7 @@ public class MainDashboard extends BorderPane {
 
         Text mainTitle =
                 new Text(
-                        "AI-POWERED EXPENSE TRACKER"
+                        "EXPENSE TRACKER"
                 );
 
         mainTitle.setFont(
@@ -195,7 +195,7 @@ public class MainDashboard extends BorderPane {
 
         Text subTitle =
                 new Text(
-                        "Full-Stack JavaFX • MVC • JDBC • NLP AI Auto-Categorization"
+                        "JavaFX • MVC • JDBC • NLP AI Auto-Categorization"
                 );
 
         subTitle.setFont(

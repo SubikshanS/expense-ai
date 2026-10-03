@@ -20,7 +20,7 @@ public class MainApp extends Application {
         Scene scene = new Scene(dashboard, 1120, 720);
 
         // Configure Primary Stage Window
-        primaryStage.setTitle("AI-Powered Full-Stack Expense Tracker (JavaFX + MySQL/SQLite)");
+        primaryStage.setTitle("Expense Tracker");
         primaryStage.setMinWidth(960);
         primaryStage.setMinHeight(650);
         primaryStage.setScene(scene);
