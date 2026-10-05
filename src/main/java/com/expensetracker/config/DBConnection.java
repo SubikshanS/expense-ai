@@ -7,12 +7,6 @@ import java.sql.Statement;
 
 /**
  * DBConnection utility class managing JDBC database connectivity.
- *
- * Connection strategy:
- * 1. Try MySQL first.
- * 2. If MySQL cannot be connected, automatically use embedded SQLite.
- * 3. Automatically create the expenses table if it does not exist.
- *
  * MySQL configuration can be provided through:
  * - Environment variables: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
  * - JVM properties: db.host, db.port, db.name, db.user, db.password
