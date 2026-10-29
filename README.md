@@ -1,196 +1,235 @@
 # 🤖 AI-Powered Full-Stack Expense Tracker
 
-A JavaFX-based desktop expense management application built with **Java, JDBC, MySQL/SQLite, Maven, and rule-based NLP** for automatic expense categorization.
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
+[![JavaFX](https://img.shields.io/badge/JavaFX-21.0.2-blue.svg)](https://openjfx.io/)
+[![Database](https://img.shields.io/badge/Database-MySQL_8%20%7C%20SQLite_Fallback-blue.svg)](https://www.mysql.com/)
+[![Build](https://img.shields.io/badge/Build-Maven_3.8+-red.svg)](https://maven.apache.org/)
+[![Tests](https://img.shields.io/badge/Tests-48_Passed-brightgreen.svg)]()
+[![Offline First](https://img.shields.io/badge/Architecture-Offline--First-success.svg)]()
 
-The application allows users to record expenses, automatically categorize descriptions, search and filter transactions, view spending analytics, and export expense data to CSV or Excel.
+A modern, high-performance JavaFX desktop financial application built with **Java 21, JavaFX, JDBC, MySQL 8 (with embedded SQLite fallback), Maven, and an Offline-First AI Categorization Engine with optional API support**.
 
----
-
-## ✨ Features
-
-### 🤖 1. AI Auto-Categorization
-
-The application analyzes the expense description while the user types and suggests a category automatically.
-
-**Examples:**
-
-| Expense Description | Predicted Category |
-|---|---|
-| `bus ticket` | Transport |
-| `restaurant dinner` | Food & Dining |
-| `apple` | Shopping |
-| `electricity bill` | Housing & Utilities |
-| `movie` | Entertainment |
-| `medicine` | Health & Medical |
-
-The categorizer uses:
-
-- Text normalization
-- Tokenization
-- Keyword matching
-- Phrase matching
-- Weighted scoring
-- Category rules
-
-> **Note:** This is a lightweight **rule-based NLP system**, not a machine-learning model.
+The application provides an end-to-end personal finance management suite: automatic transaction categorization, responsive search and filtering, visual analytics, financial intelligence (anomaly detection and spending trends), and export capabilities for CSV and Excel.
 
 ---
 
-### 💰 2. Expense Management
+## 📑 Table of Contents
 
-Users can:
+- [Key Highlights](#-key-highlights)
+- [Architecture & Design](#-architecture--design)
+- [Categorization Engine: Offline-First + Optional API](#-categorization-engine-offline-first--optional-api)
+- [Core Features](#-core-features)
+  - [1. Dashboard Overview & Visual Analytics](#1-dashboard-overview--visual-analytics)
+  - [2. Transactions Management](#2-transactions-management)
+  - [3. Deep-Dive Analytics](#3-deep-dive-analytics)
+  - [4. Financial Intelligence & Spending Insights](#4-financial-intelligence--spending-insights)
+  - [5. Reports & Data Export (CSV & Excel)](#5-reports--data-export-csv--excel)
+- [Dual-Database Persistence](#-dual-database-persistence)
+- [Technology Stack](#-technology-stack)
+- [Project Structure](#-project-structure)
+- [Configuration & Environment Variables](#-configuration--environment-variables)
+- [Automated Testing](#-automated-testing)
+- [GitHub Safety & Security Rules](#-github-safety--security-rules)
+- [Getting Started](#-getting-started)
+- [License](#-license)
 
-- Add expenses
-- Edit selected expenses
-- Delete expenses
-- Clear input fields
-- Select a date
-- Select a category manually
-- Get automatic category suggestions
-- Store expense descriptions and amounts
+---
 
-Each expense contains:
+## 🌟 Key Highlights
+
+- **🔒 Offline-First Architecture**: Operates 100% offline without requiring internet access, external API subscriptions, or cloud keys. Your financial data stays private on your local machine.
+- **🤖 Extensible AI Categorization Strategy**: Uses a lightweight local NLP engine (tokenization, phrase matching, stemming, weighted category scoring) with an extensible `ExpenseCategorizer` interface ready to connect to cloud or local LLM APIs (e.g. Gemini, OpenAI, or local Ollama).
+- **🛡️ Dual Database Resilience**: Connects to **MySQL 8** for production relational storage, and seamlessly falls back to embedded **SQLite (`expense_tracker.db`)** if MySQL is unavailable.
+- **📊 Symmetrical Visual Analytics**: Clean, modern dashboard featuring balanced 50/50 visual cards with a centered Category Distribution Pie Chart and a 6-Month Monthly Spending Bar Chart.
+- **💡 Financial Intelligence**: Automatic anomaly detection, category growth/shrinkage trends, and dynamic budgeting recommendations.
+- **📈 Comprehensive Test Suite**: 48 automated JUnit 5 tests covering business logic, monetary math (`BigDecimal`), categorization, analytics, and file exporters.
+
+---
+
+## 🏗️ Architecture & Design
+
+The application follows clean architectural principles with strict separation of concerns, background concurrency, and dependency inversion via the Strategy pattern:
 
 ```text
-ID
-Amount
-Category
-Description
-Date
+                               JavaFX Desktop UI
+                        ┌──────────────────────────────┐
+                        │        MainDashboard         │
+                        │ (Multi-View Navigation Hub)  │
+                        └──────────────┬───────────────┘
+                                       │ (Async Tasks / Platform.runLater)
+                                       ▼
+                                 ExpenseService
+                  ┌────────────────────┼───────────────────┐
+                  ▼                    ▼                   ▼
+          ExpenseCategorizer       ExpenseDAO          Exporters
+          (Strategy Pattern)           │             (CSV & Excel)
+                  │                    ▼                   │
+       ┌──────────┴──────────┐   DBConnection              ▼
+       ▼                     ▼         │            Generated Files
+  AICategorizer         Optional API   │           (.csv / .xlsx)
+(Local NLP Engine)     (Gemini/Ollama) ┌───────┴───────┐
+                                       ▼               ▼
+                                    MySQL 8      SQLite Fallback
 ```
 
----
+### Multi-View Navigation Flow
 
-### 🔎 3. Search, Filtering & Sorting
+The dashboard is structured into five dedicated views accessible via the sidebar:
 
-The dashboard provides:
-
-- Description/category search
-- Month filtering
-- Date sorting
-- Amount sorting
-
-The selected filters also affect the displayed dashboard analytics.
+1. **Dashboard Overview**: High-level financial health cards and aligned visual distribution charts.
+2. **Transactions**: Complete transaction records with live auto-categorization, search, date filtering, and CRUD operations.
+3. **Analytics**: Time-series spending trends (7D, 30D, 3M, 6M, 1Y, ALL) and Month-over-Month (MoM) normalized category comparisons.
+4. **Spending Insights**: Automated financial intelligence detecting spending spikes, abnormal expenses, and budgeting alerts.
+5. **Reports & Export**: Category breakdown reports and one-click exports to CSV and Excel `.xlsx`.
 
 ---
 
-### 📊 4. Dashboard Analytics
+## 🧠 Categorization Engine: Offline-First + Optional API
 
-The dashboard displays:
+### Design Philosophy
 
-- **Total Spending**
-- **Top Category**
-- **Number of Transactions**
-- **Average Expense**
+Financial management applications require **high reliability, low latency, and strict user privacy**. The categorization system is built around an **Offline-First** core with an extensible **Strategy Pattern** for optional external AI enhancements.
 
-#### 🥧 Spending Breakdown by Category
+```text
+                         Expense Description (User Input)
+                                       │
+                                       ▼
+                   ┌───────────────────────────────────────┐
+                   │  Tier 1: Local Transaction Memory     │
+                   │  (Matches past user overrides in DB)  │
+                   └───────────────────┬───────────────────┘
+                                       │ (Unmatched)
+                                       ▼
+                   ┌───────────────────────────────────────┐
+                   │  Tier 2: Local Rule-Based NLP Engine  │
+                   │  • Text normalization & lowercasing   │
+                   │  • Word stemming & tokenization       │
+                   │  • Keyword & multi-word phrase match  │
+                   │  • Weighted scoring & confidence check│
+                   └───────────────────┬───────────────────┘
+                                       │ (Ambiguous / Unknown)
+                                       ▼
+                   ┌───────────────────────────────────────┐
+                   │  Tier 3: Optional Cloud / Local API   │
+                   │  (e.g., Google Gemini, Ollama Local)  │
+                   └───────────────────┬───────────────────┘
+                                       │
+                        ┌──────────────┴──────────────┐
+                        │ (Success)                   │ (API Offline / Timeout)
+                        ▼                             ▼
+                Predicted Category            Instant Fallback to
+                                               Tier 2 "Other" / Best
+```
 
-A Pie Chart displays how spending is distributed across expense categories.
+### 1. Offline Rule-Based NLP Engine (Default)
 
-#### 📅 Monthly Spending
+The built-in [`AICategorizer`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/main/java/com/expensetracker/service/AICategorizer.java) runs entirely within the JVM without external calls:
 
-A Bar Chart displays spending grouped by month.
+- **Text Normalization**: Strips punctuation, trims whitespace, and converts to lowercase.
+- **Stemming & Morpheme Handling**: Recognizes root stems (e.g., `medic-` matches `medicine`, `medication`, `medical`).
+- **Phrase Matching**: Prioritizes multi-token phrases over single words (e.g., `ice cream` or `grocery shopping` $\to$ Food & Dining).
+- **Weighted Scoring**: Assigns higher confidence scores to unambiguous keywords (e.g., `netflix` $\to$ Subscriptions) over generic words.
+- **Prediction Result**: Produces both a predicted category and a confidence level (`HIGH`, `MEDIUM`, `LOW`).
 
-The monthly chart displays the latest six available months.
+#### Supported Categories:
+
+- 🚗 **Transport** (e.g., *uber, bus ticket, metro, petrol, flight, train*)
+- 🍔 **Food & Dining** (e.g., *restaurant dinner, starbucks, pizza, grocery, cafe*)
+- 🛍️ **Shopping** (e.g., *amazon, clothing, shoes, electronics, apparel*)
+- 🎬 **Entertainment** (e.g., *cinema, movie, concert, spotify, steam, game*)
+- 💡 **Housing & Utilities** (e.g., *electricity bill, rent, water, wifi, gas*)
+- 🏥 **Health & Medical** (e.g., *pharmacy, doctor, medicine, clinic, dentist*)
+- 💼 **Salary & Income** (e.g., *payroll, bonus, dividend, freelance*)
+- 🎓 **Education** (e.g., *tuition, books, course, udemy, seminar*)
+- 🔄 **Subscriptions** (e.g., *netflix, gym membership, prime, icloud*)
+- 📦 **Other** (unclassified fallback)
+
+### 2. Optional AI API Integration
+
+Through the [`ExpenseCategorizer`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/main/java/com/expensetracker/service/ExpenseCategorizer.java) interface, developers can seamlessly plug in cloud LLMs or local models without modifying the UI or database layers:
+
+```java
+public interface ExpenseCategorizer {
+    AICategorizer.PredictionResult predictCategory(String description);
+    List<String> getAvailableCategories();
+}
+```
+
+- **Cloud AI (e.g. Google Gemini API / OpenAI)**: Enables zero-shot semantic categorization for novel or regional slang descriptions when an internet connection and API key are configured.
+- **Local AI (e.g. Ollama / LLaMA on `localhost:11434`)**: Enables offline LLM inference with complete privacy and zero data leakage.
+- **Zero-Error Fallback Guarantee**: If an external API is slow, rate-limited, or unavailable, the application immediately falls back to the local offline NLP engine, ensuring a smooth and uninterrupted user experience.
 
 ---
 
-### 📄 5. CSV Export
+## ✨ Core Features
 
-Expense data can be exported to a `.csv` file.
+### 1. Dashboard Overview & Visual Analytics
 
-The CSV export includes:
+- **KPI Cards**: Displays real-time aggregate figures for **Total Spending**, **Top Category**, **Total Transactions**, and **Average Expense**.
+- **Category Distribution (Pie Chart)**: Clean 50/50 symmetrical visual card with bottom legend and percentage tooltips, providing an instant view of budget allocation.
+- **Monthly Spending (Bar Chart)**: Chronological breakdown of expenses over the latest six active months, formatted with currency labels (`$`, `€`, `₹`).
 
-- ID
-- Date
-- Category
-- Description
-- Amount
-- Summary report
-- Grand total
-- Category totals
+### 2. Transactions Management
+
+- **Live Auto-Categorization**: Categorizer listens to description input changes in real-time, instantly suggesting the category and updating the form.
+- **CRUD Operations**: Add, Edit, Delete, and Clear fields with full `BigDecimal` precision.
+- **Instant Search**: Real-time filtering by description and category keywords.
+- **Month Filtering & Sorting**: Filter transactions by specific months, or sort chronologically and by expense amount.
+
+### 3. Deep-Dive Analytics
+
+- **Time-Series Spending Trends**: Line chart with dynamic time range selectors (`7D`, `30D`, `3M`, `6M`, `1Y`, `ALL`) to visualize spending momentum over time.
+- **Month-over-Month (MoM) Comparison**: Side-by-side normalized category comparison bars illustrating spending shifts between adjacent months.
+
+### 4. Financial Intelligence & Spending Insights
+
+- **Anomaly Detection**: Flags transactions that deviate significantly from average spending habits (e.g., sudden large purchases).
+- **Trend Analysis**: Highlights fastest-growing expense categories and identifies areas with noticeable savings.
+- **Budgeting Suggestions**: Context-aware advice based on recurring high-expense categories.
+
+### 5. Reports & Data Export (CSV & Excel)
+
+- **Detailed Summary Tables**: Category totals, transaction counts, and percentage shares.
+- **CSV Export**: Clean, standard RFC-4180 UTF-8 formatted CSV file with expense records, category totals, and grand totals.
+- **Excel (`.xlsx`) Export**: Rich spreadsheets generated via **Apache POI** featuring styled headers, bold summary rows, currency number formatting, and auto-adjusted column widths.
 
 ---
 
-### 📗 6. Excel Export
+## 🗄️ Dual-Database Persistence
 
-Expense data can also be exported to `.xlsx`.
+The application employs a dual-database architecture managed by [`DBConnection`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/main/java/com/expensetracker/config/DBConnection.java):
 
-The Excel report contains:
+```text
+                  DBConnection.getConnection()
+                               │
+             ┌─────────────────┴─────────────────┐
+             ▼ (Attempt 1)                       ▼ (Fallback)
+         MySQL 8                             SQLite
+ (Primary Relational DB)            (Zero-Config Embedded)
+  jdbc:mysql://localhost:3306        jdbc:sqlite:expense_tracker.db
+```
 
-- Formatted headers
-- Expense records
-- Currency formatting
-- Category totals
-- Grand total
-- Summary information
-- Automatically sized columns
-
-**Apache POI** is used for Excel generation.
+1. **MySQL 8 (Primary)**:
+   - Configured for multi-user, production-grade relational storage.
+   - Schema auto-initializes on startup with prepared statements to prevent SQL injection.
+2. **SQLite (Embedded Fallback)**:
+   - If MySQL is not installed or unreachable, the system automatically switches to local embedded SQLite (`expense_tracker.db`).
+   - Ensures zero-setup out of the box for quick evaluation, testing, or offline-only workstations.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Technology | Purpose |
-|---|---|
-| **Java 21** | Main programming language |
-| **JavaFX** | Desktop graphical user interface |
-| **JDBC** | Database connectivity |
-| **MySQL 8** | Primary relational database |
-| **SQLite** | Embedded fallback database |
-| **Maven** | Project and dependency management |
-| **Apache POI** | Excel export |
-| **MySQL 8** | Primary relational database |
-| **SQLite** | Embedded fallback database |
-| **Maven** | Project and dependency management |
-| **JUnit 5** | Automated unit and integration testing |
-| **Apache POI** | Excel export |
-| **BigDecimal & MoneyUtil** | High-precision monetary arithmetic |
-
----
-
-## 🏗️ Architecture
-
-The application adopts a robust, layered architecture with background execution and separation of concerns:
-
-```text
-                           JavaFX UI
-                     ┌──────────────────┐
-                     │   MainDashboard   │ (Multi-View Navigation)
-                     └─────────┬────────┘
-                               │ (Async Tasks / Background Threading)
-                               ▼
-                        ExpenseService
-                 ┌─────────────┼───────────────┐
-                 ▼             ▼               ▼
-        ExpenseCategorizer  ExpenseDAO     Exporters
-         (Rule / Fallback)     │          (CSV & Excel)
-                 │             ▼               │
-           AICategorizer  DBConnection         ▼
-                               │        Generated Files
-                        ┌──────┴──────┐
-                        ▼             ▼
-                      MySQL      SQLite Fallback
-```
-
-### Application Flow
-
-```text
-User Actions (Dashboard / Transactions / Analytics / Reports)
-    │
-    ▼
-MainDashboard Controller
-    │
-    ├── ExpenseService (Business Validation & BigDecimal Math)
-    │       ├── ExpenseCategorizer Strategy (AI / Rule Fallback)
-    │       └── ExpenseDAO (JDBC Prepared Statements)
-    │               └── DBConnection (MySQL with Embedded SQLite Fallback)
-    │
-    └── Exporters
-            ├── CSVExporter (UTF-8 Encoded)
-            └── ExcelExporter (Apache POI Styled Spreadsheets)
-```
+| Component | Technology | Description |
+|---|---|---|
+| **Runtime & Language** | Java 21 (LTS) | Modern Java with records, pattern matching, and enhanced switch expressions |
+| **GUI Framework** | JavaFX 21.0.2 | Hardware-accelerated desktop UI framework |
+| **Primary Database** | MySQL 8.3.0 | Relational database accessed via JDBC prepared statements |
+| **Embedded Database** | SQLite JDBC 3.45.1.0 | Zero-configuration local database fallback |
+| **Spreadsheet Engine** | Apache POI 5.2.5 | Generation and styling of `.xlsx` Excel workbooks |
+| **Monetary Math** | `BigDecimal` & `MoneyUtil` | High-precision arithmetic preventing floating-point rounding errors |
+| **Build & Dependencies** | Maven 3.8+ | Dependency management and build automation |
+| **Testing Framework** | JUnit 5 (Jupiter 5.10.2) | Comprehensive unit, service, and integration testing |
 
 ---
 
@@ -198,395 +237,163 @@ MainDashboard Controller
 
 ```text
 ExpenseTrackerAI/
-│
-├── pom.xml
-├── schema.sql
-├── README.md
+├── pom.xml                               # Maven project dependencies and build configuration
+├── schema.sql                            # Relational database schema script
+├── README.md                             # Comprehensive project documentation
+├── .gitignore                            # Git exclusion rules (sensitive data & binaries)
 │
 └── src/
     ├── main/
     │   ├── java/
     │   │   └── com/
     │   │       └── expensetracker/
-    │   │           │
-    │   │           ├── MainApp.java
+    │   │           ├── MainApp.java                    # JavaFX application entry point
     │   │           │
     │   │           ├── config/
-    │   │           │   └── DBConnection.java
+    │   │           │   └── DBConnection.java           # Dual-backend JDBC manager (MySQL/SQLite)
     │   │           │
     │   │           ├── dao/
-    │   │           │   └── ExpenseDAO.java
+    │   │           │   └── ExpenseDAO.java             # SQL data access object with prepared statements
     │   │           │
     │   │           ├── exception/
     │   │           │   ├── DatabaseOperationException.java
     │   │           │   └── ValidationException.java
     │   │           │
     │   │           ├── model/
-    │   │           │   ├── Expense.java
-    │   │           │   └── ExpenseSummary.java
+    │   │           │   ├── Expense.java                # Core expense domain model
+    │   │           │   ├── ExpenseSummary.java         # Financial aggregate model
+    │   │           │   ├── CategorySpendingPoint.java  # Category analytics data point
+    │   │           │   ├── TimeSeriesPoint.java        # Time-series trend point
+    │   │           │   ├── CategoryMoMPoint.java       # Month-over-month category model
+    │   │           │   ├── SpendingAnomaly.java        # Anomaly detection model
+    │   │           │   ├── FinancialReport.java        # Comprehensive financial report
+    │   │           │   └── ...                         # Other reporting & filter models
     │   │           │
     │   │           ├── service/
-    │   │           │   ├── AICategorizer.java
-    │   │           │   ├── ExpenseCategorizer.java
-    │   │           │   └── ExpenseService.java
+    │   │           │   ├── ExpenseCategorizer.java     # Strategy interface for categorizers
+    │   │           │   ├── AICategorizer.java          # Offline-first rule-based NLP categorizer
+    │   │           │   ├── ExpenseService.java         # Business logic & transaction orchestration
+    │   │           │   ├── AnalyticsService.java       # Aggregation & statistical calculations
+    │   │           │   └── FinancialIntelligenceService.java # Anomaly & trend detection
     │   │           │
     │   │           ├── util/
-    │   │           │   ├── CSVExporter.java
-    │   │           │   ├── ExcelExporter.java
-    │   │           │   └── MoneyUtil.java
+    │   │           │   ├── CSVExporter.java            # RFC-4180 compliant CSV export
+    │   │           │   ├── ExcelExporter.java          # Apache POI spreadsheet generator
+    │   │           │   ├── CurrencyAxisFormatter.java  # Robust JavaFX chart axis label formatter
+    │   │           │   └── MoneyUtil.java              # BigDecimal rounding and formatting utility
     │   │           │
     │   │           └── view/
-    │   │               └── MainDashboard.java
+    │   │               └── MainDashboard.java          # JavaFX responsive UI controller
     │   │
     │   └── resources/
     │       └── styles/
-    │           └── app.css
+    │           └── app.css                             # Modern theme stylesheet
     │
     └── test/
         └── java/
             └── com/
                 └── expensetracker/
                     ├── model/
-                    │   └── ExpenseTest.java
+                    │   └── ExpenseTest.java            # Model validation tests
                     ├── service/
-                    │   ├── AICategorizerTest.java
-                    │   └── ExpenseServiceTest.java
+                    │   ├── AICategorizerTest.java      # NLP categorization tests
+                    │   ├── AnalyticsServiceTest.java   # Data aggregation tests
+                    │   ├── ExpenseServiceTest.java     # Business service layer tests
+                    │   └── FinancialIntelligenceServiceTest.java # Anomaly & trend tests
                     └── util/
-                        ├── ExporterTest.java
-                        └── MoneyUtilTest.java
+                        ├── CurrencyAxisFormatterTest.java # Axis formatting precision tests
+                        ├── ExporterTest.java           # CSV & Excel file export tests
+                        └── MoneyUtilTest.java          # BigDecimal math & currency tests
 ```
 
 ---
 
-## 🗄️ Database
+## 🔐 Configuration & Environment Variables
 
-The application supports two database options.
+Database connectivity can be configured without modifying code using environment variables or JVM system properties:
 
-### MySQL
+| Variable | JVM Property | Default | Description |
+|---|---|---|---|
+| `DB_HOST` | `db.host` | `localhost` | MySQL hostname or IP address |
+| `DB_PORT` | `db.port` | `3306` | MySQL port number |
+| `DB_NAME` | `db.name` | `expense_tracker_db` | Database catalog name |
+| `DB_USER` | `db.user` | `root` | Database username |
+| `DB_PASSWORD` | `db.password` | `""` | Database password |
 
-**MySQL is the primary database option.**
-
-The application uses **JDBC** and **prepared statements** for database operations.
-
-Main table:
-
-```text
-expenses
-```
-
-Columns:
-
-```text
-id
-amount
-category
-description
-date
-created_at
-```
-
-### SQLite
-
-If a MySQL connection cannot be established, the application can use an embedded SQLite database.
-
-The local SQLite database file is:
-
-```text
-expense_tracker.db
-```
-
-This file should **not** be committed to GitHub.
+If connecting to MySQL fails or credentials are omitted, the application will automatically initialize the local `expense_tracker.db` SQLite database in the working directory.
 
 ---
 
-## 🔐 Database Configuration
+## 🧪 Automated Testing
 
-The application reads database settings from environment variables or Java system properties.
-
-Supported settings:
-
-```text
-DB_HOST
-DB_PORT
-DB_NAME
-DB_USER
-DB_PASSWORD
-```
-
-Default local configuration:
-
-```text
-Host:     localhost
-Port:     3306
-Database: expense_tracker_db
-User:     root
-```
-
-The database password should be supplied through configuration and should **never be committed to the repository**.
-
----
-
-## 📊 Core Data Structures
-
-The project demonstrates Java Collections in practical use.
-
-### ObservableList
-
-```java
-ObservableList<Expense>
-```
-
-Used for the JavaFX expense table and reactive filtering.
-
-### HashMap
-
-```java
-HashMap<String, Double>
-```
-
-Used for calculating category spending totals.
-
-### TreeMap
-
-```java
-TreeMap<YearMonth, Double>
-```
-
-Used for chronological monthly spending aggregation.
-
-### Sorting
-
-Expense records can be sorted by:
-
-- Date
-- Amount
-
----
-
-## 🧠 NLP Categorization
-
-The categorization process follows a lightweight text-processing pipeline:
-
-```text
-Expense Description
-        │
-        ▼
-Text Normalization
-        │
-        ▼
-Tokenization
-        │
-        ▼
-Keyword / Phrase Matching
-        │
-        ▼
-Weighted Category Scoring
-        │
-        ▼
-Predicted Category
-```
-
-### Example
-
-```text
-"bus ticket"
-      │
-      ▼
-Normalized Text
-      │
-      ▼
-Token / Phrase Matching
-      │
-      ▼
-Transport Keyword Detected
-      │
-      ▼
-Transport
-```
-
-The system is designed as a lightweight NLP implementation suitable for a Java mini-project.
-
----
-
-## 📤 Export Architecture
-
-### CSV Export
-
-```text
-Expense List
-     │
-     ▼
-CSVExporter
-     │
-     ▼
-.csv File
-```
-
-### Excel Export
-
-```text
-Expense List
-     │
-     ▼
-ExcelExporter
-     │
-     ▼
-Apache POI
-     │
-     ▼
-.xlsx File
-```
-
----
-
-## ⚙️ Requirements
-
-Before running the project, make sure you have:
-
-- **JDK 21 or newer**
-- **Maven 3.8 or newer**
-- **MySQL 8.x** — optional because SQLite is available as a fallback
-- Internet access during the first Maven dependency download
-
-JavaFX dependencies are managed through Maven.
-
----
-
-## ▶️ How to Run
-
-### 1. Clone the Repository
+The project includes **48 automated unit and integration tests** built on JUnit 5:
 
 ```bash
-git clone https://github.com/Subikshan/ExpenseTrackerAI.git
-cd ExpenseTrackerAI
-```
-
-### 2. Open the Project
-
-Open the project folder in IntelliJ IDEA, VS Code, or another Java IDE.
-
-Make sure the project contains:
-
-```text
-pom.xml
-src/
-schema.sql
-README.md
-```
-
-### 3. Compile the Project
-
-From the project root:
-
-```bash
-mvn clean compile
-```
-
-### 4. Run Automated Tests
-
-Execute the JUnit 5 test suite covering model validation, monetary calculations, categorization rules, service logic, and exporters:
-
-```bash
+# Run all unit and integration tests
 mvn test
 ```
 
-### 5. Run the Application
+### Test Suite Breakdown:
 
-```bash
-mvn javafx:run
-```
-
-The application will start as a JavaFX desktop application.
-
----
-
-## 🗃️ Database Schema
-
-The project includes:
-
-```text
-schema.sql
-```
-
-The main MySQL table is:
-
-```sql
-CREATE TABLE IF NOT EXISTS expenses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    amount DOUBLE NOT NULL,
-    category VARCHAR(50) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+- **[`ExpenseTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/model/ExpenseTest.java)** (6 tests): Validates amount constraints, date integrity, and input validation.
+- **[`AICategorizerTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/service/AICategorizerTest.java)** (5 tests): Tests stemming, tokenization, phrase matching, and category confidence scores.
+- **[`AnalyticsServiceTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/service/AnalyticsServiceTest.java)** (9 tests): Validates category spending distributions, time-series aggregation, and MoM calculations.
+- **[`FinancialIntelligenceServiceTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/service/FinancialIntelligenceServiceTest.java)** (10 tests): Verifies anomaly detection algorithms, category spending growth trends, and advisory generation.
+- **[`ExpenseServiceTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/service/ExpenseServiceTest.java)** (4 tests): Tests CRUD workflows, business rule validation, and error propagation.
+- **[`CurrencyAxisFormatterTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/util/CurrencyAxisFormatterTest.java)** (8 tests): Ensures numeric and double-precision axis labels format accurately without JavaFX layout exceptions.
+- **[`ExporterTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/util/ExporterTest.java)** (2 tests): Verifies that CSV and Excel `.xlsx` files are generated with accurate data and valid structures.
+- **[`MoneyUtilTest`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/src/test/java/com/expensetracker/util/MoneyUtilTest.java)** (4 tests): Verifies standard monetary rounding, negative amount checks, and currency symbols.
 
 ---
 
-## 🔒 GitHub Safety
+## 🔒 GitHub Safety & Security Rules
 
-The following files and directories should **not** be committed:
+To ensure privacy and avoid committing sensitive data, [`.gitignore`](file:///c:/Users/SUBIKSHAN/.gemini/antigravity/scratch/ExpenseTrackerAI/.gitignore) is strictly configured to exclude:
 
-```text
-target/
-*.class
-*.db
-*.db-journal
-.idea/
-*.iml
-.vscode/
-.settings/
-.project
-.classpath
-.DS_Store
-Thumbs.db
-```
+- **Local Databases**: `*.db`, `*.db-journal`, `expense_tracker.db`
+- **User Financial Reports**: `*.csv`, `*.xlsx`
+- **Secrets & Credentials**: `.env`, `*.env`, `*.log`
+- **Compiled Binaries & Build Output**: `target/`, `*.class`
+- **IDE & OS Metadata**: `.idea/`, `*.iml`, `.vscode/`, `.DS_Store`, `Thumbs.db`
 
-The SQLite database file contains local application data and should remain outside the Git repository.
-
-### Never commit:
-
-- Database passwords
-- API keys
-- Personal credentials
-- Local database files
-- IDE-specific configuration
+> [!IMPORTANT]
+> Never commit real database passwords or external API keys to git. Always use environment variables or JVM system properties.
 
 ---
 
-## 🎯 Project Objective
+## 🚀 Getting Started
 
-This project demonstrates how a Java desktop application can combine:
+### Prerequisites
 
-- Object-Oriented Programming
-- JavaFX GUI development
-- JDBC database connectivity
-- SQL CRUD operations
-- Basic NLP
-- Java Collections and data processing
-- Data visualization
-- File handling
-- CSV generation
-- Excel generation
-- Maven dependency management
+- **Java Development Kit (JDK) 21** or higher.
+- **Apache Maven 3.8** or higher.
+- *(Optional)* **MySQL 8.x** running locally (if MySQL is not running, the app automatically switches to SQLite).
 
-The project is designed as a practical Java mini-project combining **desktop application development, database programming, NLP-based categorization, data visualization, and expense analytics**.
+### Installation & Run
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Subikshan/ExpenseTrackerAI.git
+   cd ExpenseTrackerAI
+   ```
+
+2. **Compile the application:**
+   ```bash
+   mvn clean compile
+   ```
+
+3. **Run the automated test suite:**
+   ```bash
+   mvn test
+   ```
+
+4. **Launch the application:**
+   ```bash
+   mvn javafx:run
+   ```
 
 ---
 
-## 🚀 Future Improvements
+## 📄 License
 
-Possible future improvements include:
-
-- More advanced expense categorization
-- Improved NLP accuracy
-- Additional analytics
-- More detailed reports
-- Additional filtering options
-- More export/report formats
-
----
-
-## 📌 Project Status
-
-**Current Status:** Functional JavaFX expense management application with database persistence, NLP-based categorization, analytics, filtering, and CSV/Excel export.
+This project is open-source and available under the [MIT License](LICENSE).
