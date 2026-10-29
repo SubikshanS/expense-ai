@@ -44,81 +44,73 @@ public final class DBConnection {
     private static final String SQLITE_URL =
             "jdbc:sqlite:expense_tracker.db";
 
-    private static boolean usingSQLite = false;
+    private static Boolean usingSQLite = null;
+    private static boolean schemaInitialized = false;
+
+    /**
+     * Determines whether SQLite or MySQL should be used.
+     * Evaluated once at initial connection time to avoid silent mid-session switching.
+     */
+    private static synchronized void detectDatabaseBackend() {
+        if (usingSQLite != null) {
+            return;
+        }
+
+        // Try connecting to MySQL first
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            try (Connection conn = DriverManager.getConnection(MYSQL_URL, MYSQL_USER, MYSQL_PASS)) {
+                usingSQLite = false;
+                System.out.println("[DBConnection] Connected to MySQL successfully: " + MYSQL_HOST + ":" + MYSQL_PORT + "/" + MYSQL_DB);
+                return;
+            }
+        } catch (ClassNotFoundException e) {
+            System.err.println("[DBConnection] MySQL driver not found. Defaulting to embedded SQLite.");
+        } catch (SQLException e) {
+            System.err.println("[DBConnection] MySQL connection failed (" + e.getMessage() + "). Defaulting to embedded SQLite.");
+        }
+
+        usingSQLite = true;
+    }
 
     /**
      * Returns an active database connection.
      *
-     * MySQL is attempted first. If MySQL cannot be connected,
-     * SQLite is used automatically as a local fallback.
+     * MySQL is attempted first at startup. If unavailable, embedded SQLite is used.
+     * Database mode is fixed once initialized to prevent mid-run data fragmentation.
      *
      * @return active JDBC connection
      * @throws SQLException if both MySQL and SQLite connections fail
      */
     public static synchronized Connection getConnection() throws SQLException {
+        if (usingSQLite == null) {
+            detectDatabaseBackend();
+        }
 
+        Connection connection;
         if (!usingSQLite) {
             try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-
-                Connection connection = DriverManager.getConnection(
-                        MYSQL_URL,
-                        MYSQL_USER,
-                        MYSQL_PASS
-                );
-
-                initializeDatabaseSchema(connection);
-
-                return connection;
-
-            } catch (ClassNotFoundException e) {
-
-                System.err.println(
-                        "[DBConnection] MySQL driver not found. "
-                                + "Switching to SQLite."
-                );
-
+                connection = DriverManager.getConnection(MYSQL_URL, MYSQL_USER, MYSQL_PASS);
             } catch (SQLException e) {
-
-                System.err.println(
-                        "[DBConnection] MySQL connection failed: "
-                                + e.getMessage()
-                );
-
-                System.err.println(
-                        "[DBConnection] Switching to embedded SQLite fallback."
-                );
+                // If MySQL was previously established but fails on this query,
+                // do NOT silently switch to SQLite and write data to a different database.
+                throw new SQLException("MySQL database connection error: " + e.getMessage(), e);
             }
-
-            // MySQL failed, so permanently use SQLite for this application run.
-            usingSQLite = true;
+        } else {
+            try {
+                Class.forName("org.sqlite.JDBC");
+                connection = DriverManager.getConnection(SQLITE_URL);
+            } catch (ClassNotFoundException e) {
+                throw new SQLException("SQLite JDBC driver not found in classpath.", e);
+            }
         }
 
-        // SQLite fallback
-        try {
-            Class.forName("org.sqlite.JDBC");
-
-            Connection connection =
-                    DriverManager.getConnection(SQLITE_URL);
-
+        if (!schemaInitialized) {
             initializeDatabaseSchema(connection);
-
-            return connection;
-
-        } catch (ClassNotFoundException e) {
-
-            throw new SQLException(
-                    "SQLite JDBC driver not found in classpath.",
-                    e
-            );
-
-        } catch (SQLException e) {
-
-            throw new SQLException(
-                    "Unable to connect to both MySQL and SQLite.",
-                    e
-            );
+            schemaInitialized = true;
         }
+
+        return connection;
     }
 
     /**
@@ -132,10 +124,10 @@ public final class DBConnection {
     private static void initializeDatabaseSchema(Connection connection)
             throws SQLException {
 
+        boolean isSqlite = usingSQLite != null && usingSQLite;
         String createTableSQL;
 
-        if (usingSQLite) {
-
+        if (isSqlite) {
             createTableSQL =
                     "CREATE TABLE IF NOT EXISTS expenses (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -145,9 +137,7 @@ public final class DBConnection {
                     "date TEXT NOT NULL, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     ")";
-
         } else {
-
             createTableSQL =
                     "CREATE TABLE IF NOT EXISTS expenses (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY, " +
@@ -160,12 +150,10 @@ public final class DBConnection {
         }
 
         try (Statement statement = connection.createStatement()) {
-
             statement.execute(createTableSQL);
-
             System.out.println(
                     "[DBConnection] Database schema initialized successfully ("
-                            + (usingSQLite ? "SQLite" : "MySQL")
+                            + (isSqlite ? "SQLite" : "MySQL")
                             + ")"
             );
         }
@@ -176,8 +164,18 @@ public final class DBConnection {
      *
      * @return true if SQLite is being used, otherwise false
      */
-    public static boolean isUsingSQLite() {
+    public static synchronized boolean isUsingSQLite() {
+        if (usingSQLite == null) {
+            detectDatabaseBackend();
+        }
         return usingSQLite;
+    }
+
+    /**
+     * Returns the human-readable database backend name currently in use.
+     */
+    public static synchronized String getDatabaseType() {
+        return isUsingSQLite() ? "SQLite (Embedded)" : "MySQL 8.0";
     }
 
     /**

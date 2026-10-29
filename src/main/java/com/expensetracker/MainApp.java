@@ -16,13 +16,21 @@ public class MainApp extends Application {
         // Instantiate the pure Java Main Dashboard View
         MainDashboard dashboard = new MainDashboard(primaryStage);
 
-        // Create Application Scene (1120x720 dimensions)
-        Scene scene = new Scene(dashboard, 1120, 720);
+        // Create Application Scene (1160x740 dimensions)
+        Scene scene = new Scene(dashboard, 1160, 740);
+
+        try {
+            var css = getClass().getResource("/styles/app.css");
+            if (css != null) {
+                scene.getStylesheets().add(css.toExternalForm());
+            }
+        } catch (Exception ignored) {
+        }
 
         // Configure Primary Stage Window
-        primaryStage.setTitle("Expense Tracker");
-        primaryStage.setMinWidth(960);
-        primaryStage.setMinHeight(650);
+        primaryStage.setTitle("Expense Tracker - AI Financial Assistant");
+        primaryStage.setMinWidth(1000);
+        primaryStage.setMinHeight(680);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

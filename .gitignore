@@ -17,3 +17,12 @@ target/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# User Exports and Generated Reports
+*.csv
+*.xlsx
+
+# Logs, Secrets & Environments
+*.log
+.env
+*.env

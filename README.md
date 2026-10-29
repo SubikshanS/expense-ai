@@ -141,53 +141,55 @@ The Excel report contains:
 | **SQLite** | Embedded fallback database |
 | **Maven** | Project and dependency management |
 | **Apache POI** | Excel export |
-| **Java Collections** | Data processing and analytics |
+| **MySQL 8** | Primary relational database |
+| **SQLite** | Embedded fallback database |
+| **Maven** | Project and dependency management |
+| **JUnit 5** | Automated unit and integration testing |
+| **Apache POI** | Excel export |
+| **BigDecimal & MoneyUtil** | High-precision monetary arithmetic |
 
 ---
 
 ## 🏗️ Architecture
 
-The project follows a simple layered structure:
+The application adopts a robust, layered architecture with background execution and separation of concerns:
 
 ```text
-                    JavaFX UI
-                        │
-                        ▼
-                 MainDashboard
-                  │     │     │
-                  │     │     └──────────────┐
-                  │     │                    │
-                  ▼     ▼                    ▼
-          AICategorizer  ExpenseDAO       Exporters
-               │             │            │      │
-               ▼             ▼            ▼      ▼
-        Category        DBConnection    CSV     Excel
-        Prediction          │                  Export
-                            │
-                     ┌──────┴──────┐
-                     ▼             ▼
-                   MySQL      SQLite Fallback
+                           JavaFX UI
+                     ┌──────────────────┐
+                     │   MainDashboard   │ (Multi-View Navigation)
+                     └─────────┬────────┘
+                               │ (Async Tasks / Background Threading)
+                               ▼
+                        ExpenseService
+                 ┌─────────────┼───────────────┐
+                 ▼             ▼               ▼
+        ExpenseCategorizer  ExpenseDAO     Exporters
+         (Rule / Fallback)     │          (CSV & Excel)
+                 │             ▼               │
+           AICategorizer  DBConnection         ▼
+                               │        Generated Files
+                        ┌──────┴──────┐
+                        ▼             ▼
+                      MySQL      SQLite Fallback
 ```
 
 ### Application Flow
 
 ```text
-User Input
+User Actions (Dashboard / Transactions / Analytics / Reports)
     │
     ▼
-MainDashboard
+MainDashboard Controller
     │
-    ├── AICategorizer
-    │       │
-    │       └── Category Prediction
-    │
-    ├── ExpenseDAO
-    │       │
-    │       └── CRUD Operations
+    ├── ExpenseService (Business Validation & BigDecimal Math)
+    │       ├── ExpenseCategorizer Strategy (AI / Rule Fallback)
+    │       └── ExpenseDAO (JDBC Prepared Statements)
+    │               └── DBConnection (MySQL with Embedded SQLite Fallback)
     │
     └── Exporters
-            ├── CSVExporter
-            └── ExcelExporter
+            ├── CSVExporter (UTF-8 Encoded)
+            └── ExcelExporter (Apache POI Styled Spreadsheets)
 ```
 
 ---
@@ -202,31 +204,56 @@ ExpenseTrackerAI/
 ├── README.md
 │
 └── src/
-    └── main/
+    ├── main/
+    │   ├── java/
+    │   │   └── com/
+    │   │       └── expensetracker/
+    │   │           │
+    │   │           ├── MainApp.java
+    │   │           │
+    │   │           ├── config/
+    │   │           │   └── DBConnection.java
+    │   │           │
+    │   │           ├── dao/
+    │   │           │   └── ExpenseDAO.java
+    │   │           │
+    │   │           ├── exception/
+    │   │           │   ├── DatabaseOperationException.java
+    │   │           │   └── ValidationException.java
+    │   │           │
+    │   │           ├── model/
+    │   │           │   ├── Expense.java
+    │   │           │   └── ExpenseSummary.java
+    │   │           │
+    │   │           ├── service/
+    │   │           │   ├── AICategorizer.java
+    │   │           │   ├── ExpenseCategorizer.java
+    │   │           │   └── ExpenseService.java
+    │   │           │
+    │   │           ├── util/
+    │   │           │   ├── CSVExporter.java
+    │   │           │   ├── ExcelExporter.java
+    │   │           │   └── MoneyUtil.java
+    │   │           │
+    │   │           └── view/
+    │   │               └── MainDashboard.java
+    │   │
+    │   └── resources/
+    │       └── styles/
+    │           └── app.css
+    │
+    └── test/
         └── java/
             └── com/
                 └── expensetracker/
-                    │
-                    ├── MainApp.java
-                    │
-                    ├── config/
-                    │   └── DBConnection.java
-                    │
-                    ├── dao/
-                    │   └── ExpenseDAO.java
-                    │
                     ├── model/
-                    │   └── Expense.java
-                    │
+                    │   └── ExpenseTest.java
                     ├── service/
-                    │   └── AICategorizer.java
-                    │
-                    ├── util/
-                    │   ├── CSVExporter.java
-                    │   └── ExcelExporter.java
-                    │
-                    └── view/
-                        └── MainDashboard.java
+                    │   ├── AICategorizerTest.java
+                    │   └── ExpenseServiceTest.java
+                    └── util/
+                        ├── ExporterTest.java
+                        └── MoneyUtilTest.java
 ```
 
 ---
@@ -455,7 +482,15 @@ From the project root:
 mvn clean compile
 ```
 
-### 4. Run the Application
+### 4. Run Automated Tests
+
+Execute the JUnit 5 test suite covering model validation, monetary calculations, categorization rules, service logic, and exporters:
+
+```bash
+mvn test
+```
+
+### 5. Run the Application
 
 ```bash
 mvn javafx:run

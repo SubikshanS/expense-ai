@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * No external AI API is required.
  */
-public class AICategorizer {
+public class AICategorizer implements ExpenseCategorizer {
 
     private final Map<String, String> keywordMap;
     private final Map<String, Integer> keywordWeights;

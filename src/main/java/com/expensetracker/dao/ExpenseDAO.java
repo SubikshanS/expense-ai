@@ -121,11 +121,23 @@ public class ExpenseDAO {
                 String description =
                         rs.getString("description");
 
-                String dateString =
-                        rs.getString("date");
-
-                LocalDate date =
-                        LocalDate.parse(dateString);
+                String dateString = rs.getString("date");
+                LocalDate date;
+                if (dateString == null || dateString.trim().isEmpty()) {
+                    date = LocalDate.now();
+                } else {
+                    String cleanDate = dateString.trim();
+                    if (cleanDate.contains(" ")) {
+                        cleanDate = cleanDate.split(" ")[0];
+                    } else if (cleanDate.contains("T")) {
+                        cleanDate = cleanDate.split("T")[0];
+                    }
+                    try {
+                        date = LocalDate.parse(cleanDate);
+                    } catch (Exception ex) {
+                        date = LocalDate.now();
+                    }
+                }
 
                 expenses.add(
                         new Expense(

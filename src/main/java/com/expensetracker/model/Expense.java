@@ -79,15 +79,27 @@ public class Expense {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public java.math.BigDecimal getAmountBigDecimal() {
+        return com.expensetracker.util.MoneyUtil.toBigDecimal(amount);
+    }
 
+    public void setAmount(double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException(
                     "Expense amount cannot be negative."
             );
         }
+        // Round to 2 decimal places to prevent floating-point discrepancies
+        this.amount = com.expensetracker.util.MoneyUtil.toBigDecimal(amount).doubleValue();
+    }
 
-        this.amount = amount;
+    public void setAmount(java.math.BigDecimal amountBigDecimal) {
+        if (amountBigDecimal == null || amountBigDecimal.compareTo(java.math.BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "Expense amount cannot be negative."
+            );
+        }
+        this.amount = amountBigDecimal.setScale(com.expensetracker.util.MoneyUtil.SCALE, com.expensetracker.util.MoneyUtil.ROUNDING_MODE).doubleValue();
     }
 
     public String getCategory() {
@@ -95,7 +107,6 @@ public class Expense {
     }
 
     public void setCategory(String category) {
-
         this.category =
                 category != null && !category.trim().isEmpty()
                         ? category.trim()
@@ -107,7 +118,9 @@ public class Expense {
     }
 
     public void setDescription(String description) {
-
+        if (description != null && description.trim().length() > 255) {
+            throw new IllegalArgumentException("Description cannot exceed 255 characters.");
+        }
         this.description =
                 description != null
                         ? description.trim()
@@ -119,11 +132,32 @@ public class Expense {
     }
 
     public void setDate(LocalDate date) {
-
         this.date =
                 date != null
                         ? date
                         : LocalDate.now();
+    }
+
+    /**
+     * Validates that the expense is ready for persistence.
+     * @throws IllegalArgumentException with a clear user-facing message if invalid
+     */
+    public void validate() {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Expense amount must be greater than ₹0.00.");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("Description cannot be empty.");
+        }
+        if (description.trim().length() > 255) {
+            throw new IllegalArgumentException("Description cannot exceed 255 characters.");
+        }
+        if (date == null) {
+            throw new IllegalArgumentException("Date must be selected.");
+        }
+        if (date.isAfter(LocalDate.now().plusDays(365))) {
+            throw new IllegalArgumentException("Date cannot be more than one year in the future.");
+        }
     }
 
     // =========================
@@ -131,10 +165,10 @@ public class Expense {
     // =========================
 
     /**
-     * Returns the expense amount formatted as Indian Rupees.
+     * Returns the expense amount formatted as Indian Rupees with 2 decimal places.
      */
     public String getFormattedAmount() {
-        return String.format("₹%.2f", amount);
+        return com.expensetracker.util.MoneyUtil.formatRupees(amount);
     }
 
     /**
