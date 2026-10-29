@@ -19,14 +19,6 @@ public class MainApp extends Application {
         // Create Application Scene (1160x740 dimensions)
         Scene scene = new Scene(dashboard, 1160, 740);
 
-        try {
-            var css = getClass().getResource("/styles/app.css");
-            if (css != null) {
-                scene.getStylesheets().add(css.toExternalForm());
-            }
-        } catch (Exception ignored) {
-        }
-
         // Configure Primary Stage Window
         primaryStage.setTitle("Expense Tracker - AI Financial Assistant");
         primaryStage.setMinWidth(1000);

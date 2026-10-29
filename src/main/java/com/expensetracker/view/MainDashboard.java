@@ -17,6 +17,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.Chart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
@@ -207,6 +208,85 @@ public class MainDashboard extends BorderPane {
     private HBox statusBanner;
     private Label statusBannerText;
 
+    // Pure Java Styling Theme & Palettes (100% Standalone - Zero External CSS Required)
+    private static final String STYLE_ROOT =
+            "-fx-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -fx-background-color: #F8FAFC; -fx-text-fill: #0F172A;";
+    private static final String STYLE_CARD =
+            "-fx-background-color: #FFFFFF; -fx-background-radius: 12px; -fx-border-color: #E2E8F0; -fx-border-radius: 12px; -fx-border-width: 1px; -fx-padding: 18px; -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.04), 10, 0, 0, 2);";
+    private static final String STYLE_INSIGHT_CARD =
+            "-fx-background-color: #F8FAFC; -fx-background-radius: 10px; -fx-border-color: #E2E8F0; -fx-border-radius: 10px; -fx-border-width: 1px; -fx-padding: 14 18;";
+    private static final String STYLE_ANOMALY_CARD =
+            "-fx-background-color: #FFF1F2; -fx-background-radius: 10px; -fx-border-color: #FECDD3; -fx-border-radius: 10px; -fx-border-width: 1px; -fx-padding: 14 18;";
+    private static final String STYLE_PAGE_TITLE =
+            "-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F172A;";
+    private static final String STYLE_PAGE_SUBTITLE =
+            "-fx-font-size: 13px; -fx-text-fill: #64748B;";
+    private static final String STYLE_FORM_LABEL =
+            "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #334155;";
+    private static final String STYLE_INPUT =
+            "-fx-background-color: #FFFFFF; -fx-background-radius: 7px; -fx-border-color: #CBD5E1; -fx-border-radius: 7px; -fx-border-width: 1px; -fx-padding: 8 12; -fx-font-size: 13px; -fx-text-fill: #0F172A;";
+    private static final String STYLE_COMBO =
+            "-fx-background-color: #FFFFFF; -fx-background-radius: 7px; -fx-border-color: #CBD5E1; -fx-border-radius: 7px; -fx-border-width: 1px; -fx-font-size: 13px;";
+    private static final String STYLE_TABLE =
+            "-fx-background-color: #FFFFFF; -fx-background-radius: 8px; -fx-border-color: #E2E8F0; -fx-border-radius: 8px; -fx-border-width: 1px;";
+    private static final String[] CHART_PALETTE = {
+            "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899",
+            "#06B6D4", "#F97316", "#6366F1", "#14B8A6", "#64748B"
+    };
+
+    private static final String NAV_NORMAL_STYLE =
+            "-fx-background-color: transparent; -fx-text-fill: #94A3B8; -fx-font-size: 13px; -fx-font-weight: 600; -fx-alignment: CENTER_LEFT; -fx-padding: 10 14; -fx-background-radius: 8px; -fx-cursor: hand;";
+    private static final String NAV_HOVER_STYLE =
+            "-fx-background-color: #1E293B; -fx-text-fill: #F8FAFC; -fx-font-size: 13px; -fx-font-weight: 600; -fx-alignment: CENTER_LEFT; -fx-padding: 10 14; -fx-background-radius: 8px; -fx-cursor: hand;";
+    private static final String NAV_ACTIVE_STYLE =
+            "-fx-background-color: #2563EB; -fx-text-fill: #FFFFFF; -fx-font-size: 13px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-padding: 10 14; -fx-background-radius: 8px; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(37, 99, 235, 0.4), 8, 0, 0, 2);";
+
+    private Button activeNavBtn = null;
+
+    private void stylePrimaryButton(Button btn) {
+        String base = "-fx-background-color: #2563EB; -fx-text-fill: #FFFFFF; -fx-font-size: 12px; -fx-font-weight: 600; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #1D4ED8; -fx-text-fill: #FFFFFF; -fx-font-size: 12px; -fx-font-weight: 600; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-cursor: hand;";
+        btn.setStyle(base);
+        btn.setOnMouseEntered(e -> btn.setStyle(hover));
+        btn.setOnMouseExited(e -> btn.setStyle(base));
+    }
+
+    private void styleSecondaryButton(Button btn) {
+        String base = "-fx-background-color: #FFFFFF; -fx-text-fill: #334155; -fx-border-color: #CBD5E1; -fx-border-radius: 7px; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-font-size: 12px; -fx-font-weight: 600; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #F8FAFC; -fx-text-fill: #0F172A; -fx-border-color: #94A3B8; -fx-border-radius: 7px; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-font-size: 12px; -fx-font-weight: 600; -fx-cursor: hand;";
+        btn.setStyle(base);
+        btn.setOnMouseEntered(e -> btn.setStyle(hover));
+        btn.setOnMouseExited(e -> btn.setStyle(base));
+    }
+
+    private void styleSuccessButton(Button btn) {
+        String base = "-fx-background-color: #059669; -fx-text-fill: #FFFFFF; -fx-font-size: 12px; -fx-font-weight: 600; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #047857; -fx-text-fill: #FFFFFF; -fx-font-size: 12px; -fx-font-weight: 600; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-cursor: hand;";
+        btn.setStyle(base);
+        btn.setOnMouseEntered(e -> btn.setStyle(hover));
+        btn.setOnMouseExited(e -> btn.setStyle(base));
+    }
+
+    private void styleDangerButton(Button btn) {
+        String base = "-fx-background-color: #DC2626; -fx-text-fill: #FFFFFF; -fx-font-size: 12px; -fx-font-weight: 600; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #B91C1C; -fx-text-fill: #FFFFFF; -fx-font-size: 12px; -fx-font-weight: 600; -fx-background-radius: 7px; -fx-padding: 7 15; -fx-cursor: hand;";
+        btn.setStyle(base);
+        btn.setOnMouseEntered(e -> btn.setStyle(hover));
+        btn.setOnMouseExited(e -> btn.setStyle(base));
+    }
+
+    private void setBadge(Label badge, String text, String type) {
+        badge.setText(text);
+        switch (type != null ? type : "") {
+            case "success" -> badge.setStyle("-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-background-radius: 12px; -fx-padding: 3 10; -fx-font-size: 11px; -fx-font-weight: bold;");
+            case "warning" -> badge.setStyle("-fx-background-color: #FEF3C7; -fx-text-fill: #B45309; -fx-background-radius: 12px; -fx-padding: 3 10; -fx-font-size: 11px; -fx-font-weight: bold;");
+            case "danger" -> badge.setStyle("-fx-background-color: #FEE2E2; -fx-text-fill: #B91C1C; -fx-background-radius: 12px; -fx-padding: 3 10; -fx-font-size: 11px; -fx-font-weight: bold;");
+            case "purple" -> badge.setStyle("-fx-background-color: #EDE9FE; -fx-text-fill: #6D28D9; -fx-background-radius: 12px; -fx-padding: 3 10; -fx-font-size: 11px; -fx-font-weight: bold;");
+            case "trend-up" -> badge.setStyle("-fx-background-color: #FEE2E2; -fx-text-fill: #DC2626; -fx-background-radius: 12px; -fx-padding: 3 10; -fx-font-size: 11px; -fx-font-weight: bold;");
+            default -> badge.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #475569; -fx-background-radius: 12px; -fx-padding: 3 10; -fx-font-size: 11px; -fx-font-weight: bold;");
+        }
+    }
+
     // State
     private Expense selectedExpense = null;
     private boolean sortDateAsc = false;
@@ -224,26 +304,16 @@ public class MainDashboard extends BorderPane {
         this.masterExpenseList = FXCollections.observableArrayList();
         this.filteredExpenseList = new FilteredList<>(masterExpenseList, p -> true);
 
-        loadStylesheet();
         initializeUI();
         refreshExpensesFromDatabase();
     }
 
-    private void loadStylesheet() {
-        try {
-            var css = getClass().getResource("/styles/app.css");
-            if (css != null) {
-                getStylesheets().add(css.toExternalForm());
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
     private void initializeUI() {
+        setStyle(STYLE_ROOT);
         setLeft(buildSidebar());
 
         contentHost = new StackPane();
-        contentHost.getStyleClass().add("content-area");
+        contentHost.setStyle("-fx-background-color: #F8FAFC;");
 
         // Build all views
         dashboardView = buildDashboardView();
@@ -269,11 +339,11 @@ public class MainDashboard extends BorderPane {
         // Status banner
         statusBanner = new HBox(8);
         statusBanner.setAlignment(Pos.CENTER_LEFT);
-        statusBanner.getStyleClass().addAll("status-banner", "status-banner-success");
         statusBannerText = new Label();
         statusBanner.getChildren().add(statusBannerText);
         statusBanner.setVisible(false);
         statusBanner.setManaged(false);
+        VBox.setMargin(statusBanner, new Insets(12, 24, 0, 24));
 
         VBox centerContainer = new VBox(12);
         centerContainer.getChildren().addAll(statusBanner, contentHost);
@@ -291,15 +361,19 @@ public class MainDashboard extends BorderPane {
 
     private VBox buildSidebar() {
         VBox sidebar = new VBox(16);
-        sidebar.getStyleClass().add("sidebar");
+        sidebar.setPrefWidth(240);
+        sidebar.setMinWidth(240);
+        sidebar.setMaxWidth(240);
+        sidebar.setPadding(new Insets(24, 16, 20, 16));
+        sidebar.setStyle("-fx-background-color: #0F172A; -fx-border-color: transparent #1E293B transparent transparent; -fx-border-width: 0 1px 0 0;");
 
         // Brand Title
         VBox brandBox = new VBox(4);
         Label brandTitle = new Label("💰 Expense AI");
-        brandTitle.getStyleClass().add("sidebar-brand-title");
+        brandTitle.setStyle("-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;");
 
         Label brandSub = new Label("Smart Financial Tracker");
-        brandSub.getStyleClass().add("sidebar-brand-subtitle");
+        brandSub.setStyle("-fx-font-size: 11px; -fx-font-weight: 500; -fx-text-fill: #94A3B8;");
         brandBox.getChildren().addAll(brandTitle, brandSub);
 
         Separator sep1 = new Separator();
@@ -326,13 +400,13 @@ public class MainDashboard extends BorderPane {
 
         // Storage status badge
         VBox storageBox = new VBox(4);
-        storageBox.getStyleClass().add("sidebar-status-box");
+        storageBox.setStyle("-fx-background-color: #1E293B; -fx-background-radius: 8px; -fx-padding: 10 14; -fx-border-color: #334155; -fx-border-radius: 8px; -fx-border-width: 1px;");
         Label storageTitle = new Label("DATABASE STORAGE");
         storageTitle.setStyle("-fx-font-size: 10px; -fx-text-fill: #94A3B8; -fx-font-weight: bold;");
 
         String dbType = DBConnection.getDatabaseType();
         Label storageType = new Label("● " + dbType);
-        storageType.getStyleClass().add("sidebar-status-text");
+        storageType.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #10B981;");
         storageBox.getChildren().addAll(storageTitle, storageType);
 
         sidebar.getChildren().addAll(brandBox, sep1, navBox, spacer, storageBox);
@@ -342,43 +416,57 @@ public class MainDashboard extends BorderPane {
     private Button createNavButton(String text, Runnable action) {
         Button btn = new Button(text);
         btn.setMaxWidth(Double.MAX_VALUE);
-        btn.getStyleClass().add("nav-button");
+        btn.setAlignment(Pos.CENTER_LEFT);
+        btn.setStyle(NAV_NORMAL_STYLE);
+        btn.setOnMouseEntered(e -> {
+            if (btn != activeNavBtn) {
+                btn.setStyle(NAV_HOVER_STYLE);
+            }
+        });
+        btn.setOnMouseExited(e -> {
+            if (btn != activeNavBtn) {
+                btn.setStyle(NAV_NORMAL_STYLE);
+            }
+        });
         btn.setOnAction(e -> action.run());
         return btn;
     }
 
     private void switchView(ViewType viewType) {
-        navDashboardBtn.getStyleClass().remove("nav-button-active");
-        navTransactionsBtn.getStyleClass().remove("nav-button-active");
-        navAnalyticsBtn.getStyleClass().remove("nav-button-active");
-        if (navInsightsBtn != null) navInsightsBtn.getStyleClass().remove("nav-button-active");
-        navReportsBtn.getStyleClass().remove("nav-button-active");
+        if (activeNavBtn != null) {
+            activeNavBtn.setStyle(NAV_NORMAL_STYLE);
+        }
 
         switch (viewType) {
             case DASHBOARD -> {
-                navDashboardBtn.getStyleClass().add("nav-button-active");
+                activeNavBtn = navDashboardBtn;
+                navDashboardBtn.setStyle(NAV_ACTIVE_STYLE);
                 contentHost.getChildren().setAll(dashboardScroll);
                 renderDashboardCharts();
             }
             case TRANSACTIONS -> {
-                navTransactionsBtn.getStyleClass().add("nav-button-active");
+                activeNavBtn = navTransactionsBtn;
+                navTransactionsBtn.setStyle(NAV_ACTIVE_STYLE);
                 contentHost.getChildren().setAll(transactionsView);
                 if (mainTableView != null) mainTableView.refresh();
             }
             case ANALYTICS -> {
-                navAnalyticsBtn.getStyleClass().add("nav-button-active");
+                activeNavBtn = navAnalyticsBtn;
+                navAnalyticsBtn.setStyle(NAV_ACTIVE_STYLE);
                 contentHost.getChildren().setAll(analyticsScroll);
                 renderSpendingLineChart();
                 renderCategoryBarChart();
                 renderMoMBarChart();
             }
             case INSIGHTS -> {
-                if (navInsightsBtn != null) navInsightsBtn.getStyleClass().add("nav-button-active");
+                activeNavBtn = navInsightsBtn;
+                if (navInsightsBtn != null) navInsightsBtn.setStyle(NAV_ACTIVE_STYLE);
                 contentHost.getChildren().setAll(insightsScroll);
                 updateInsightsView(expenseService.getFinancialIntelligence(masterExpenseList));
             }
             case REPORTS -> {
-                navReportsBtn.getStyleClass().add("nav-button-active");
+                activeNavBtn = navReportsBtn;
+                navReportsBtn.setStyle(NAV_ACTIVE_STYLE);
                 contentHost.getChildren().setAll(reportsScroll);
                 if (currentGeneratedReport == null) {
                     generateAndDisplayReport();
@@ -400,13 +488,14 @@ public class MainDashboard extends BorderPane {
 
     private VBox buildDashboardView() {
         VBox view = new VBox(20);
+        view.setPadding(new Insets(20, 24, 24, 24));
 
         // Header
         VBox headerBox = new VBox(4);
         Label title = new Label("Dashboard Overview");
-        title.getStyleClass().add("page-title");
+        title.setStyle(STYLE_PAGE_TITLE);
         Label sub = new Label("Key financial metrics and recent transactions at a glance.");
-        sub.getStyleClass().add("page-subtitle");
+        sub.setStyle(STYLE_PAGE_SUBTITLE);
         headerBox.getChildren().addAll(title, sub);
 
         // KPI Cards Row
@@ -435,7 +524,7 @@ public class MainDashboard extends BorderPane {
 
         // Card 1: Category Distribution (PieChart)
         VBox pieCard = new VBox(10);
-        pieCard.getStyleClass().add("card");
+        pieCard.setStyle(STYLE_CARD);
         pieCard.setMaxWidth(Double.MAX_VALUE);
         pieCard.setPrefWidth(0);
         HBox.setHgrow(pieCard, Priority.ALWAYS);
@@ -448,7 +537,7 @@ public class MainDashboard extends BorderPane {
         Region pieSpacer = new Region();
         HBox.setHgrow(pieSpacer, Priority.ALWAYS);
         Button deepDiveBtn = new Button("View Full Analytics →");
-        deepDiveBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(deepDiveBtn);
         deepDiveBtn.setOnAction(e -> switchView(ViewType.ANALYTICS));
         pieHeader.getChildren().addAll(pieTitle, pieSpacer, deepDiveBtn);
 
@@ -461,6 +550,7 @@ public class MainDashboard extends BorderPane {
         dashboardPieChart.setStartAngle(90);
         dashboardPieChart.setClockwise(true);
         dashboardPieChart.setAnimated(false);
+        dashboardPieChart.setStyle("-fx-background-color: transparent;");
 
         dashboardPieEmptyState = createEmptyStateLabel("No expense data recorded yet.\nAdd transactions to visualize category distribution.");
         dashboardPieEmptyState.setVisible(false);
@@ -473,7 +563,7 @@ public class MainDashboard extends BorderPane {
 
         // Card 2: Monthly Spending History (BarChart)
         VBox monthlyCard = new VBox(10);
-        monthlyCard.getStyleClass().add("card");
+        monthlyCard.setStyle(STYLE_CARD);
         monthlyCard.setMaxWidth(Double.MAX_VALUE);
         monthlyCard.setPrefWidth(0);
         HBox.setHgrow(monthlyCard, Priority.ALWAYS);
@@ -486,23 +576,31 @@ public class MainDashboard extends BorderPane {
         Region monthlySpacer = new Region();
         HBox.setHgrow(monthlySpacer, Priority.ALWAYS);
         Label monthlyBadge = new Label("Calendar Trajectory");
-        monthlyBadge.getStyleClass().addAll("badge", "badge-neutral");
+        setBadge(monthlyBadge, "Calendar Trajectory", "neutral");
         monthlyHeader.getChildren().addAll(monthlyTitle, monthlySpacer, monthlyBadge);
 
         CategoryAxis mXAxis = new CategoryAxis();
         mXAxis.setLabel("Month");
         mXAxis.setAnimated(false);
+        mXAxis.setStyle("-fx-tick-label-fill: #475569; -fx-font-size: 11px;");
 
         NumberAxis mYAxis = new NumberAxis();
         mYAxis.setLabel("Amount (₹)");
         mYAxis.setTickLabelFormatter(new CurrencyAxisFormatter());
         mYAxis.setAnimated(false);
+        mYAxis.setStyle("-fx-tick-label-fill: #64748B; -fx-font-size: 10px;");
 
         dashboardMonthlyBarChart = new BarChart<>(mXAxis, mYAxis);
         dashboardMonthlyBarChart.setPrefHeight(280);
         dashboardMonthlyBarChart.setMinHeight(280);
         dashboardMonthlyBarChart.setLegendVisible(false);
         dashboardMonthlyBarChart.setAnimated(false);
+        dashboardMonthlyBarChart.setBarGap(4);
+        dashboardMonthlyBarChart.setCategoryGap(16);
+        dashboardMonthlyBarChart.setVerticalGridLinesVisible(false);
+        dashboardMonthlyBarChart.setHorizontalGridLinesVisible(true);
+        dashboardMonthlyBarChart.setStyle("-fx-background-color: transparent;");
+        configureChartAesthetics(dashboardMonthlyBarChart);
 
         dashboardMonthlyEmptyState = createEmptyStateLabel("Add transactions to see monthly spending.");
         dashboardMonthlyEmptyState.setVisible(false);
@@ -517,7 +615,7 @@ public class MainDashboard extends BorderPane {
 
         // Recent Transactions Section
         VBox recentBox = new VBox(12);
-        recentBox.getStyleClass().add("card");
+        recentBox.setStyle(STYLE_CARD);
 
         HBox recentHeader = new HBox(12);
         recentHeader.setAlignment(Pos.CENTER_LEFT);
@@ -528,11 +626,11 @@ public class MainDashboard extends BorderPane {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button addExpenseBtn = new Button("➕ Add Expense");
-        addExpenseBtn.getStyleClass().addAll("btn", "btn-primary");
+        stylePrimaryButton(addExpenseBtn);
         addExpenseBtn.setOnAction(e -> switchView(ViewType.TRANSACTIONS));
 
         Button viewAllBtn = new Button("View All Transactions →");
-        viewAllBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(viewAllBtn);
         viewAllBtn.setOnAction(e -> switchView(ViewType.TRANSACTIONS));
 
         recentHeader.getChildren().addAll(recentTitle, spacer, addExpenseBtn, viewAllBtn);
@@ -544,7 +642,7 @@ public class MainDashboard extends BorderPane {
 
         // Intelligence Highlights Banner
         HBox intelBanner = new HBox(16);
-        intelBanner.getStyleClass().add("insight-card");
+        intelBanner.setStyle(STYLE_INSIGHT_CARD);
         intelBanner.setAlignment(Pos.CENTER_LEFT);
 
         VBox intelTextBox = new VBox(4);
@@ -555,7 +653,7 @@ public class MainDashboard extends BorderPane {
         Label intelTitle = new Label("💡 Personal Financial Intelligence Highlights");
         intelTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1E293B;");
         dashboardIntelBadge = new Label("Healthy Baseline");
-        dashboardIntelBadge.getStyleClass().setAll("badge", "badge-neutral");
+        setBadge(dashboardIntelBadge, "Healthy Baseline", "neutral");
         intelHeader.getChildren().addAll(intelTitle, dashboardIntelBadge);
 
         dashboardIntelSummaryLbl = new Label("Loading spending patterns and statistical baseline...");
@@ -564,7 +662,7 @@ public class MainDashboard extends BorderPane {
         intelTextBox.getChildren().addAll(intelHeader, dashboardIntelSummaryLbl);
 
         Button exploreIntelBtn = new Button("Explore Spending Insights →");
-        exploreIntelBtn.getStyleClass().addAll("btn", "btn-primary");
+        stylePrimaryButton(exploreIntelBtn);
         exploreIntelBtn.setOnAction(e -> switchView(ViewType.INSIGHTS));
 
         intelBanner.getChildren().addAll(intelTextBox, exploreIntelBtn);
@@ -575,22 +673,21 @@ public class MainDashboard extends BorderPane {
 
     private VBox createStatCard(String title, String initialVal, String accentColor, String icon, String subtitle) {
         VBox card = new VBox(6);
-        card.getStyleClass().add("card");
+        card.setStyle(STYLE_CARD);
 
         HBox top = new HBox(8);
         top.setAlignment(Pos.CENTER_LEFT);
         Label iconLbl = new Label(icon);
         iconLbl.setStyle("-fx-font-size: 14px;");
         Label titleLbl = new Label(title);
-        titleLbl.getStyleClass().add("stat-card-title");
+        titleLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748B;");
         top.getChildren().addAll(iconLbl, titleLbl);
 
         Label valueLbl = new Label(initialVal);
-        valueLbl.getStyleClass().add("stat-card-value");
-        valueLbl.setStyle("-fx-text-fill: " + accentColor + ";");
+        valueLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: " + accentColor + ";");
 
         Label subLbl = new Label(subtitle);
-        subLbl.getStyleClass().add("stat-card-sub");
+        subLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #94A3B8;");
 
         card.getChildren().addAll(top, valueLbl, subLbl);
         return card;
@@ -602,13 +699,14 @@ public class MainDashboard extends BorderPane {
 
     private VBox buildTransactionsView() {
         VBox view = new VBox(16);
+        view.setPadding(new Insets(20, 24, 24, 24));
 
         // Header
         VBox headerBox = new VBox(4);
         Label title = new Label("Transactions Ledger");
-        title.getStyleClass().add("page-title");
+        title.setStyle(STYLE_PAGE_TITLE);
         Label sub = new Label("Record, edit, filter, and manage your daily expenses.");
-        sub.getStyleClass().add("page-subtitle");
+        sub.setStyle(STYLE_PAGE_SUBTITLE);
         headerBox.getChildren().addAll(title, sub);
 
         // Content split: Left Entry Form (320px) | Right Table + Filters
@@ -629,25 +727,27 @@ public class MainDashboard extends BorderPane {
         form.setPrefWidth(320);
         form.setMinWidth(300);
         form.setMaxWidth(340);
-        form.getStyleClass().add("card");
+        form.setStyle(STYLE_CARD);
 
         Label formTitle = new Label("Expense Details");
         formTitle.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
 
         // Amount Field
         Label amtLabel = new Label("Amount (₹)*");
-        amtLabel.getStyleClass().add("form-label");
+        amtLabel.setStyle(STYLE_FORM_LABEL);
         amountField = new TextField();
+        amountField.setStyle(STYLE_INPUT);
         amountField.setPromptText("e.g. 150.00");
 
         // Description Field & AI Badge
         Label descLabel = new Label("Description*");
-        descLabel.getStyleClass().add("form-label");
+        descLabel.setStyle(STYLE_FORM_LABEL);
         descriptionField = new TextField();
+        descriptionField.setStyle(STYLE_INPUT);
         descriptionField.setPromptText("e.g. Uber ride, Starbucks, Grocery");
 
         aiBadge = new Label("🤖 AI: Enter description to auto-categorize");
-        aiBadge.getStyleClass().addAll("badge", "badge-neutral");
+        setBadge(aiBadge, "🤖 AI: Enter description to auto-categorize", "neutral");
         aiBadge.setWrapText(true);
 
         descriptionField.textProperty().addListener((obs, oldText, newText) -> {
@@ -655,28 +755,27 @@ public class MainDashboard extends BorderPane {
                 AICategorizer.PredictionResult result = expenseService.getCategorizer().predictCategory(newText);
                 if (result.isConfident()) {
                     categoryComboBox.setValue(result.getCategory());
-                    aiBadge.setText(String.format("🤖 Auto-categorized: %s (%.0f%%)", result.getCategory(), result.getConfidence() * 100));
-                    aiBadge.getStyleClass().setAll("badge", "badge-success");
+                    setBadge(aiBadge, String.format("🤖 Auto-categorized: %s (%.0f%%)", result.getCategory(), result.getConfidence() * 100), "success");
                 } else {
-                    aiBadge.setText("🤖 Suggested: " + result.getCategory() + " (Select manually if needed)");
-                    aiBadge.getStyleClass().setAll("badge", "badge-warning");
+                    setBadge(aiBadge, "🤖 Suggested: " + result.getCategory() + " (Select manually if needed)", "warning");
                 }
             } else {
-                aiBadge.setText("🤖 AI: Enter description to auto-categorize");
-                aiBadge.getStyleClass().setAll("badge", "badge-neutral");
+                setBadge(aiBadge, "🤖 AI: Enter description to auto-categorize", "neutral");
             }
         });
 
         // Date Picker
         Label dateLabel = new Label("Date*");
-        dateLabel.getStyleClass().add("form-label");
+        dateLabel.setStyle(STYLE_FORM_LABEL);
         datePicker = new DatePicker(LocalDate.now());
+        datePicker.setStyle(STYLE_COMBO);
         datePicker.setMaxWidth(Double.MAX_VALUE);
 
         // Category ComboBox
         Label catLabel = new Label("Category*");
-        catLabel.getStyleClass().add("form-label");
+        catLabel.setStyle(STYLE_FORM_LABEL);
         categoryComboBox = new ComboBox<>();
+        categoryComboBox.setStyle(STYLE_COMBO);
         categoryComboBox.setItems(FXCollections.observableArrayList(expenseService.getCategorizer().getAvailableCategories()));
         categoryComboBox.setValue("Other");
         categoryComboBox.setMaxWidth(Double.MAX_VALUE);
@@ -684,18 +783,18 @@ public class MainDashboard extends BorderPane {
         // Form Action Buttons
         saveExpenseButton = new Button("➕ Add Expense");
         saveExpenseButton.setMaxWidth(Double.MAX_VALUE);
-        saveExpenseButton.getStyleClass().addAll("btn", "btn-primary");
+        stylePrimaryButton(saveExpenseButton);
         saveExpenseButton.setOnAction(e -> handleSaveExpense());
 
         updateExpenseButton = new Button("✏️ Update Selected");
         updateExpenseButton.setMaxWidth(Double.MAX_VALUE);
-        updateExpenseButton.getStyleClass().addAll("btn", "btn-success");
+        styleSuccessButton(updateExpenseButton);
         updateExpenseButton.setDisable(true);
         updateExpenseButton.setOnAction(e -> handleUpdateExpense());
 
         clearFormButton = new Button("🔄 Clear Form");
         clearFormButton.setMaxWidth(Double.MAX_VALUE);
-        clearFormButton.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(clearFormButton);
         clearFormButton.setOnAction(e -> clearFormFields());
 
         form.getChildren().addAll(
@@ -720,17 +819,19 @@ public class MainDashboard extends BorderPane {
         toolbar.setAlignment(Pos.CENTER_LEFT);
 
         searchField = new TextField();
+        searchField.setStyle(STYLE_INPUT);
         searchField.setPromptText("🔍 Search description or category...");
         searchField.setPrefWidth(240);
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
 
         monthFilterComboBox = new ComboBox<>();
+        monthFilterComboBox.setStyle(STYLE_COMBO);
         monthFilterComboBox.setPrefWidth(140);
         monthFilterComboBox.setValue("All Months");
         monthFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
 
         Button sortDateBtn = new Button("📅 Date ⇅");
-        sortDateBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(sortDateBtn);
         sortDateBtn.setOnAction(e -> {
             sortDateAsc = !sortDateAsc;
             sortDateBtn.setText(sortDateAsc ? "📅 Date ↑" : "📅 Date ↓");
@@ -740,7 +841,7 @@ public class MainDashboard extends BorderPane {
         });
 
         Button sortAmountBtn = new Button("💲 Amount ⇅");
-        sortAmountBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(sortAmountBtn);
         sortAmountBtn.setOnAction(e -> {
             sortAmountAsc = !sortAmountAsc;
             sortAmountBtn.setText(sortAmountAsc ? "💲 Amount ↑" : "💲 Amount ↓");
@@ -753,7 +854,7 @@ public class MainDashboard extends BorderPane {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button refreshBtn = new Button("🔄 Refresh");
-        refreshBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(refreshBtn);
         refreshBtn.setOnAction(e -> refreshExpensesFromDatabase());
 
         toolbar.getChildren().addAll(searchField, monthFilterComboBox, sortDateBtn, sortAmountBtn, spacer, refreshBtn);
@@ -769,31 +870,41 @@ public class MainDashboard extends BorderPane {
     private TableView<Expense> createConfiguredTableView(boolean includeActions) {
         TableView<Expense> table = new TableView<>();
         table.setItems(includeActions ? filteredExpenseList : masterExpenseList);
-        table.getStyleClass().add("table-view");
+        table.setStyle(STYLE_TABLE);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         Label placeholder = new Label("No expense records found.\nEnter a new transaction to get started.");
-        placeholder.getStyleClass().add("table-placeholder");
+        placeholder.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 13px; -fx-alignment: CENTER; -fx-text-alignment: CENTER;");
         table.setPlaceholder(placeholder);
 
         TableColumn<Expense, Integer> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
-        idCol.setPrefWidth(50);
+        idCol.setPrefWidth(55);
+        idCol.setMinWidth(45);
+        idCol.setMaxWidth(65);
 
         TableColumn<Expense, String> dateCol = new TableColumn<>("Date");
         dateCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("formattedDate"));
-        dateCol.setPrefWidth(95);
+        dateCol.setPrefWidth(100);
+        dateCol.setMinWidth(90);
+        dateCol.setMaxWidth(115);
 
         TableColumn<Expense, String> catCol = new TableColumn<>("Category");
         catCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("category"));
-        catCol.setPrefWidth(130);
+        catCol.setPrefWidth(135);
+        catCol.setMinWidth(110);
+        catCol.setMaxWidth(160);
 
         TableColumn<Expense, String> descCol = new TableColumn<>("Description");
         descCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("description"));
-        descCol.setPrefWidth(220);
+        descCol.setPrefWidth(240);
+        descCol.setMinWidth(160);
 
         TableColumn<Expense, String> amtCol = new TableColumn<>("Amount");
         amtCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("formattedAmount"));
-        amtCol.setPrefWidth(100);
+        amtCol.setPrefWidth(110);
+        amtCol.setMinWidth(95);
+        amtCol.setMaxWidth(135);
         amtCol.setStyle("-fx-alignment: CENTER-RIGHT; -fx-font-weight: bold;");
 
         table.getColumns().add(idCol);
@@ -805,11 +916,13 @@ public class MainDashboard extends BorderPane {
         if (includeActions) {
             TableColumn<Expense, Void> actionCol = new TableColumn<>("Action");
             actionCol.setPrefWidth(75);
+            actionCol.setMinWidth(70);
+            actionCol.setMaxWidth(80);
             actionCol.setCellFactory(param -> new TableCell<>() {
                 private final Button deleteBtn = new Button("🗑️");
 
                 {
-                    deleteBtn.getStyleClass().addAll("btn", "btn-danger");
+                    styleDangerButton(deleteBtn);
                     deleteBtn.setOnAction(e -> {
                         TableRow<Expense> row = getTableRow();
                         if (row != null && row.getItem() != null) {
@@ -853,18 +966,19 @@ public class MainDashboard extends BorderPane {
 
     private VBox buildAnalyticsView() {
         VBox view = new VBox(20);
+        view.setPadding(new Insets(20, 24, 24, 24));
 
         // Header
         VBox headerBox = new VBox(4);
         Label title = new Label("Spending Analytics & Visual Trends");
-        title.getStyleClass().add("page-title");
+        title.setStyle(STYLE_PAGE_TITLE);
         Label sub = new Label("High-resolution chronological timelines, category distributions, and normalized comparisons.");
-        sub.getStyleClass().add("page-subtitle");
+        sub.setStyle(STYLE_PAGE_SUBTITLE);
         headerBox.getChildren().addAll(title, sub);
 
         // Time Range Filter Toolbar & Metric Ribbon Card
         VBox filterCard = new VBox(14);
-        filterCard.getStyleClass().add("card");
+        filterCard.setStyle(STYLE_CARD);
 
         HBox filterToolbar = new HBox(12);
         filterToolbar.setAlignment(Pos.CENTER_LEFT);
@@ -873,6 +987,7 @@ public class MainDashboard extends BorderPane {
         rangeLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #1E293B; -fx-font-size: 13px;");
 
         lineChartRangeCombo = new ComboBox<>();
+        lineChartRangeCombo.setStyle(STYLE_COMBO);
         lineChartRangeCombo.getItems().addAll(TimeRange.values());
         lineChartRangeCombo.setValue(TimeRange.LAST_30_DAYS);
         lineChartRangeCombo.setPrefWidth(160);
@@ -911,7 +1026,7 @@ public class MainDashboard extends BorderPane {
 
         // Chart 1: Spending Over Time (LineChart Card)
         VBox lineCard = new VBox(12);
-        lineCard.getStyleClass().add("card");
+        lineCard.setStyle(STYLE_CARD);
 
         VBox lineHeader = new VBox(3);
         Label lineTitle = new Label("📈 Spending Over Time");
@@ -923,17 +1038,26 @@ public class MainDashboard extends BorderPane {
         CategoryAxis lineXAxis = new CategoryAxis();
         lineXAxis.setLabel("Timeline");
         lineXAxis.setAnimated(false);
+        lineXAxis.setTickLabelRotation(-35);
+        lineXAxis.setTickLabelGap(4);
+        lineXAxis.setStyle("-fx-tick-label-fill: #64748B; -fx-font-size: 10px;");
 
         NumberAxis lineYAxis = new NumberAxis();
         lineYAxis.setLabel("Spending Amount (₹)");
         lineYAxis.setTickLabelFormatter(new CurrencyAxisFormatter());
         lineYAxis.setAnimated(false);
+        lineYAxis.setStyle("-fx-tick-label-fill: #64748B; -fx-font-size: 10px;");
 
         spendingLineChart = new LineChart<>(lineXAxis, lineYAxis);
         spendingLineChart.setPrefHeight(340);
+        spendingLineChart.setMinHeight(280);
         spendingLineChart.setLegendVisible(false);
         spendingLineChart.setAnimated(false);
         spendingLineChart.setCreateSymbols(true);
+        spendingLineChart.setVerticalGridLinesVisible(false);
+        spendingLineChart.setHorizontalGridLinesVisible(true);
+        spendingLineChart.setStyle("-fx-background-color: transparent;");
+        configureChartAesthetics(spendingLineChart);
 
         lineChartEmptyState = createEmptyStateLabel("No spending recorded in this period.\nAdd expenses to visualize timeline trajectory.");
         lineChartEmptyState.setVisible(false);
@@ -943,10 +1067,13 @@ public class MainDashboard extends BorderPane {
 
         // Bottom Row: Category Breakdown (BarChart) + Month-over-Month Comparison (Grouped BarChart)
         HBox bottomRow = new HBox(16);
+        bottomRow.setFillHeight(true);
 
         // Chart 2: Category Breakdown Card
         VBox catCard = new VBox(12);
-        catCard.getStyleClass().add("card");
+        catCard.setStyle(STYLE_CARD);
+        catCard.setMaxWidth(Double.MAX_VALUE);
+        catCard.setPrefWidth(0);
         HBox.setHgrow(catCard, Priority.ALWAYS);
 
         VBox catHeader = new VBox(3);
@@ -959,17 +1086,27 @@ public class MainDashboard extends BorderPane {
         CategoryAxis catXAxis = new CategoryAxis();
         catXAxis.setLabel("Category");
         catXAxis.setTickLabelRotation(-25);
+        catXAxis.setTickLabelGap(4);
         catXAxis.setAnimated(false);
+        catXAxis.setStyle("-fx-tick-label-fill: #475569; -fx-font-size: 11px;");
 
         NumberAxis catYAxis = new NumberAxis();
         catYAxis.setLabel("Total Amount (₹)");
         catYAxis.setTickLabelFormatter(new CurrencyAxisFormatter());
         catYAxis.setAnimated(false);
+        catYAxis.setStyle("-fx-tick-label-fill: #64748B; -fx-font-size: 10px;");
 
         categoryBarChart = new BarChart<>(catXAxis, catYAxis);
         categoryBarChart.setPrefHeight(340);
+        categoryBarChart.setMinHeight(280);
         categoryBarChart.setLegendVisible(false);
         categoryBarChart.setAnimated(false);
+        categoryBarChart.setBarGap(4);
+        categoryBarChart.setCategoryGap(20);
+        categoryBarChart.setVerticalGridLinesVisible(false);
+        categoryBarChart.setHorizontalGridLinesVisible(true);
+        categoryBarChart.setStyle("-fx-background-color: transparent;");
+        configureChartAesthetics(categoryBarChart);
 
         categoryBarEmptyState = createEmptyStateLabel("No expense categories found.");
         categoryBarEmptyState.setVisible(false);
@@ -979,7 +1116,9 @@ public class MainDashboard extends BorderPane {
 
         // Chart 3: Month-over-Month Comparison Card
         VBox momCard = new VBox(12);
-        momCard.getStyleClass().add("card");
+        momCard.setStyle(STYLE_CARD);
+        momCard.setMaxWidth(Double.MAX_VALUE);
+        momCard.setPrefWidth(0);
         HBox.setHgrow(momCard, Priority.ALWAYS);
 
         HBox momTopRow = new HBox(8);
@@ -1003,17 +1142,27 @@ public class MainDashboard extends BorderPane {
         CategoryAxis momXAxis = new CategoryAxis();
         momXAxis.setLabel("Category");
         momXAxis.setTickLabelRotation(-25);
+        momXAxis.setTickLabelGap(4);
         momXAxis.setAnimated(false);
+        momXAxis.setStyle("-fx-tick-label-fill: #475569; -fx-font-size: 11px;");
 
         NumberAxis momYAxis = new NumberAxis();
         momYAxis.setLabel("Spending (₹)");
         momYAxis.setTickLabelFormatter(new CurrencyAxisFormatter());
         momYAxis.setAnimated(false);
+        momYAxis.setStyle("-fx-tick-label-fill: #64748B; -fx-font-size: 10px;");
 
         momBarChart = new BarChart<>(momXAxis, momYAxis);
         momBarChart.setPrefHeight(340);
+        momBarChart.setMinHeight(280);
         momBarChart.setLegendVisible(true);
         momBarChart.setAnimated(false);
+        momBarChart.setBarGap(3);
+        momBarChart.setCategoryGap(18);
+        momBarChart.setVerticalGridLinesVisible(false);
+        momBarChart.setHorizontalGridLinesVisible(true);
+        momBarChart.setStyle("-fx-background-color: transparent;");
+        configureChartAesthetics(momBarChart);
 
         momEmptyState = createEmptyStateLabel("Requires at least 2 calendar months of records\nto plot Month-over-Month comparison.");
         momEmptyState.setVisible(false);
@@ -1037,18 +1186,19 @@ public class MainDashboard extends BorderPane {
 
     private VBox buildReportsView() {
         VBox view = new VBox(20);
+        view.setPadding(new Insets(20, 24, 24, 24));
 
         // Header
         VBox headerBox = new VBox(4);
         Label title = new Label("Financial Reports & Statement Generator");
-        title.getStyleClass().add("page-title");
+        title.setStyle(STYLE_PAGE_TITLE);
         Label sub = new Label("Generate comprehensive financial statements, filter by reporting period and category, analyze category distributions, and export official CSV & Excel statements.");
-        sub.getStyleClass().add("page-subtitle");
+        sub.setStyle(STYLE_PAGE_SUBTITLE);
         headerBox.getChildren().addAll(title, sub);
 
         // Filter / Control Ribbon Card
         VBox ribbonCard = new VBox(12);
-        ribbonCard.getStyleClass().add("card");
+        ribbonCard.setStyle(STYLE_CARD);
 
         HBox filterRow = new HBox(12);
         filterRow.setAlignment(Pos.CENTER_LEFT);
@@ -1060,7 +1210,7 @@ public class MainDashboard extends BorderPane {
         reportPeriodPresetCombo = new ComboBox<>();
         reportPeriodPresetCombo.getItems().addAll(ReportFilter.PeriodPreset.values());
         reportPeriodPresetCombo.setValue(ReportFilter.PeriodPreset.ALL_TIME);
-        reportPeriodPresetCombo.setStyle("-fx-font-weight: bold; -fx-pref-width: 170px;");
+        reportPeriodPresetCombo.setStyle(STYLE_COMBO + " -fx-pref-width: 170px; -fx-font-weight: bold;");
         periodBox.getChildren().addAll(periodLbl, reportPeriodPresetCombo);
 
         // Category Filter
@@ -1070,7 +1220,7 @@ public class MainDashboard extends BorderPane {
         reportCategoryFilterCombo = new ComboBox<>();
         reportCategoryFilterCombo.getItems().add("All Categories");
         reportCategoryFilterCombo.setValue("All Categories");
-        reportCategoryFilterCombo.setStyle("-fx-pref-width: 170px;");
+        reportCategoryFilterCombo.setStyle(STYLE_COMBO + " -fx-pref-width: 170px;");
         catFilterBox.getChildren().addAll(catFilterLbl, reportCategoryFilterCombo);
 
         // Custom Date Range (managed/visible only when CUSTOM is selected)
@@ -1083,14 +1233,14 @@ public class MainDashboard extends BorderPane {
         Label startLbl = new Label("FROM DATE");
         startLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748B;");
         reportStartDatePicker = new DatePicker(LocalDate.now().minusMonths(1));
-        reportStartDatePicker.setStyle("-fx-pref-width: 130px;");
+        reportStartDatePicker.setStyle(STYLE_COMBO + " -fx-pref-width: 130px;");
         startBox.getChildren().addAll(startLbl, reportStartDatePicker);
 
         VBox endBox = new VBox(4);
         Label endLbl = new Label("TO DATE");
         endLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748B;");
         reportEndDatePicker = new DatePicker(LocalDate.now());
-        reportEndDatePicker.setStyle("-fx-pref-width: 130px;");
+        reportEndDatePicker.setStyle(STYLE_COMBO + " -fx-pref-width: 130px;");
         endBox.getChildren().addAll(endLbl, reportEndDatePicker);
 
         reportCustomDatesBox.getChildren().addAll(startBox, endBox);
@@ -1119,19 +1269,19 @@ public class MainDashboard extends BorderPane {
 
         // Action buttons
         Button generateBtn = new Button("🔄 Refresh");
-        generateBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(generateBtn);
         generateBtn.setOnAction(e -> generateAndDisplayReport());
 
         Button exportExcelBtn = new Button("📗 Export Excel");
-        exportExcelBtn.getStyleClass().addAll("btn", "btn-primary");
+        stylePrimaryButton(exportExcelBtn);
         exportExcelBtn.setOnAction(e -> handleExportReportExcel());
 
         Button exportCsvBtn = new Button("📊 Export CSV");
-        exportCsvBtn.getStyleClass().addAll("btn", "btn-success");
+        styleSuccessButton(exportCsvBtn);
         exportCsvBtn.setOnAction(e -> handleExportReportCSV());
 
         Button summaryModalBtn = new Button("📋 Executive Summary");
-        summaryModalBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(summaryModalBtn);
         summaryModalBtn.setOnAction(e -> showReportSummaryModal());
 
         HBox actionBtnBox = new HBox(8);
@@ -1172,33 +1322,37 @@ public class MainDashboard extends BorderPane {
 
         // Section 1: Category Rollup Breakdown Table
         VBox catBreakdownCard = new VBox(12);
-        catBreakdownCard.getStyleClass().add("card");
+        catBreakdownCard.setStyle(STYLE_CARD);
         Label catTitle = new Label("📊 Category Rollup & Expenditure Distribution");
         catTitle.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
         Label catSub = new Label("Aggregated totals, transaction volumes, and percentage contribution per category.");
         catSub.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748B;");
 
         reportCategoryTable = new TableView<>();
-        reportCategoryTable.getStyleClass().add("table-view");
+        reportCategoryTable.setStyle(STYLE_TABLE);
+        reportCategoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         reportCategoryTable.setPrefHeight(200);
 
         TableColumn<CategoryReportRow, String> rCatCol = new TableColumn<>("Category");
         rCatCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("category"));
-        rCatCol.setPrefWidth(220);
+        rCatCol.setMinWidth(160);
 
         TableColumn<CategoryReportRow, Integer> rCountCol = new TableColumn<>("Transactions");
         rCountCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("transactionCount"));
-        rCountCol.setPrefWidth(130);
+        rCountCol.setMinWidth(100);
+        rCountCol.setMaxWidth(130);
         rCountCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<CategoryReportRow, String> rAmtCol = new TableColumn<>("Total Spent");
         rAmtCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("formattedTotalAmount"));
-        rAmtCol.setPrefWidth(180);
+        rAmtCol.setMinWidth(120);
+        rAmtCol.setMaxWidth(170);
         rAmtCol.setStyle("-fx-alignment: CENTER-RIGHT; -fx-font-weight: bold;");
 
         TableColumn<CategoryReportRow, String> rPctCol = new TableColumn<>("% Share of Spend");
         rPctCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("formattedPercentage"));
-        rPctCol.setPrefWidth(160);
+        rPctCol.setMinWidth(120);
+        rPctCol.setMaxWidth(160);
         rPctCol.setStyle("-fx-alignment: CENTER-RIGHT;");
 
         reportCategoryTable.getColumns().addAll(rCatCol, rCountCol, rAmtCol, rPctCol);
@@ -1206,35 +1360,40 @@ public class MainDashboard extends BorderPane {
 
         // Section 2: Statement Transaction Ledger
         VBox ledgerCard = new VBox(12);
-        ledgerCard.getStyleClass().add("card");
+        ledgerCard.setStyle(STYLE_CARD);
         Label ledgerTitle = new Label("📑 Statement Itemized Transactions");
         ledgerTitle.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
         Label ledgerSub = new Label("All transactions included within this report's filtered date range and category scope.");
         ledgerSub.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748B;");
 
         reportLedgerTable = new TableView<>();
-        reportLedgerTable.getStyleClass().add("table-view");
+        reportLedgerTable.setStyle(STYLE_TABLE);
+        reportLedgerTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         reportLedgerTable.setPrefHeight(300);
 
         TableColumn<Expense, Integer> lIdCol = new TableColumn<>("ID");
         lIdCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
-        lIdCol.setPrefWidth(60);
+        lIdCol.setMinWidth(45);
+        lIdCol.setMaxWidth(65);
 
         TableColumn<Expense, String> lDateCol = new TableColumn<>("Date");
         lDateCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("formattedDate"));
-        lDateCol.setPrefWidth(110);
+        lDateCol.setMinWidth(90);
+        lDateCol.setMaxWidth(115);
 
         TableColumn<Expense, String> lCatCol = new TableColumn<>("Category");
         lCatCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("category"));
-        lCatCol.setPrefWidth(150);
+        lCatCol.setMinWidth(120);
+        lCatCol.setMaxWidth(160);
 
         TableColumn<Expense, String> lDescCol = new TableColumn<>("Description");
         lDescCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("description"));
-        lDescCol.setPrefWidth(320);
+        lDescCol.setMinWidth(180);
 
         TableColumn<Expense, String> lAmtCol = new TableColumn<>("Amount");
         lAmtCol.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("formattedAmount"));
-        lAmtCol.setPrefWidth(140);
+        lAmtCol.setMinWidth(100);
+        lAmtCol.setMaxWidth(140);
         lAmtCol.setStyle("-fx-alignment: CENTER-RIGHT; -fx-font-weight: bold;");
 
         reportLedgerTable.getColumns().addAll(lIdCol, lDateCol, lCatCol, lDescCol, lAmtCol);
@@ -1725,7 +1884,7 @@ public class MainDashboard extends BorderPane {
         subLbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748B;");
 
         VBox summaryBox = new VBox(8);
-        summaryBox.getStyleClass().add("card");
+        summaryBox.setStyle(STYLE_CARD);
 
         summaryBox.getChildren().addAll(
                 createSummaryModalRow("Total Expenditure", currentGeneratedReport.getFormattedTotalAmount(), "#2563EB"),
@@ -1738,18 +1897,13 @@ public class MainDashboard extends BorderPane {
         HBox footer = new HBox();
         footer.setAlignment(Pos.CENTER_RIGHT);
         Button closeBtn = new Button("Close Summary");
-        closeBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(closeBtn);
         closeBtn.setOnAction(e -> dialog.close());
         footer.getChildren().add(closeBtn);
 
         root.getChildren().addAll(titleLbl, subLbl, summaryBox, footer);
 
         Scene scene = new Scene(root);
-        try {
-            var css = getClass().getResource("/styles/app.css");
-            if (css != null) scene.getStylesheets().add(css.toExternalForm());
-        } catch (Exception ignored) {}
-
         dialog.setScene(scene);
         dialog.showAndWait();
     }
@@ -1773,8 +1927,7 @@ public class MainDashboard extends BorderPane {
         descriptionField.clear();
         datePicker.setValue(LocalDate.now());
         categoryComboBox.setValue("Other");
-        aiBadge.setText("🤖 AI: Enter description to auto-categorize");
-        aiBadge.getStyleClass().setAll("badge", "badge-neutral");
+        setBadge(aiBadge, "🤖 AI: Enter description to auto-categorize", "neutral");
 
         saveExpenseButton.setDisable(false);
         updateExpenseButton.setDisable(true);
@@ -1786,10 +1939,11 @@ public class MainDashboard extends BorderPane {
 
     private void showStatusBanner(String message, boolean success) {
         statusBannerText.setText((success ? "✓ " : "⚠️ ") + message);
-        statusBanner.getStyleClass().setAll(
-                "status-banner",
-                success ? "status-banner-success" : "status-banner-error"
-        );
+        statusBannerText.setStyle("-fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: " + (success ? "#166534;" : "#991B1B;"));
+        statusBanner.setStyle("-fx-padding: 10 16; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-border-width: 1px; "
+                + (success
+                ? "-fx-background-color: #DCFCE7; -fx-border-color: #86EFAC;"
+                : "-fx-background-color: #FEE2E2; -fx-border-color: #FCA5A5;"));
         statusBanner.setVisible(true);
         statusBanner.setManaged(true);
 
@@ -1816,13 +1970,14 @@ public class MainDashboard extends BorderPane {
 
     private VBox buildInsightsView() {
         VBox view = new VBox(20);
+        view.setPadding(new Insets(20, 24, 24, 24));
 
         // Header
         VBox headerBox = new VBox(4);
         Label title = new Label("Personal Financial Intelligence");
-        title.getStyleClass().add("page-title");
+        title.setStyle(STYLE_PAGE_TITLE);
         Label sub = new Label("Statistical analysis of spending velocity, month-over-month shifts, driver categories, and anomalies.");
-        sub.getStyleClass().add("page-subtitle");
+        sub.setStyle(STYLE_PAGE_SUBTITLE);
         headerBox.getChildren().addAll(title, sub);
 
         // Section 1: KPI Velocity & MoM Grid
@@ -1852,7 +2007,7 @@ public class MainDashboard extends BorderPane {
 
         // Section 2: Key Takeaways & Observations
         VBox summaryCard = new VBox(10);
-        summaryCard.getStyleClass().add("insight-card");
+        summaryCard.setStyle(STYLE_INSIGHT_CARD);
         Label summaryTitle = new Label("📌 Key Algorithmic Observations");
         summaryTitle.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1E293B;");
         summaryInsightsBox = new VBox(6);
@@ -1860,7 +2015,7 @@ public class MainDashboard extends BorderPane {
 
         // Section 3: MoM Spending Drivers / Category Attribution
         VBox driversCard = new VBox(12);
-        driversCard.getStyleClass().add("card");
+        driversCard.setStyle(STYLE_CARD);
         Label driversTitle = new Label("📈 Category Shifts & Spending Growth Drivers");
         driversTitle.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
         Label driversSub = new Label("Categories that contributed most to spending increases compared to previous month.");
@@ -1870,7 +2025,7 @@ public class MainDashboard extends BorderPane {
 
         // Section 4: Spending Anomalies (Spikes & Surges)
         VBox anomaliesCard = new VBox(12);
-        anomaliesCard.getStyleClass().add("card");
+        anomaliesCard.setStyle(STYLE_CARD);
         Label anomaliesTitle = new Label("🚨 Statistical Spending Anomalies");
         anomaliesTitle.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
         Label anomaliesSub = new Label("Transactions or monthly surges flagged via leave-one-out standard deviation (Z ≥ 2.0, Δ ≥ ₹150, ≥ 1.5× baseline).");
@@ -1920,11 +2075,9 @@ public class MainDashboard extends BorderPane {
         if (dashboardIntelSummaryLbl != null && dashboardIntelBadge != null) {
             int anomalyCount = intel.getAnomalies().size();
             if (anomalyCount > 0) {
-                dashboardIntelBadge.setText(anomalyCount + " Anomaly" + (anomalyCount > 1 ? "ies" : "") + " Flagged");
-                dashboardIntelBadge.getStyleClass().setAll("badge", "badge-danger");
+                setBadge(dashboardIntelBadge, anomalyCount + " Anomaly" + (anomalyCount > 1 ? "ies" : "") + " Flagged", "danger");
             } else {
-                dashboardIntelBadge.setText("Healthy Baseline");
-                dashboardIntelBadge.getStyleClass().setAll("badge", "badge-neutral");
+                setBadge(dashboardIntelBadge, "Healthy Baseline", "neutral");
             }
 
             if (intel.getSummaryInsight() != null && !intel.getSummaryInsight().isEmpty()) {
@@ -2007,7 +2160,7 @@ public class MainDashboard extends BorderPane {
                     for (CategoryTrend driver : comp.getCategoryTrends()) {
                         HBox driverRow = new HBox(12);
                         driverRow.setAlignment(Pos.CENTER_LEFT);
-                        driverRow.getStyleClass().add("insight-card");
+                        driverRow.setStyle(STYLE_INSIGHT_CARD);
 
                         VBox infoBox = new VBox(4);
                         HBox.setHgrow(infoBox, Priority.ALWAYS);
@@ -2017,8 +2170,8 @@ public class MainDashboard extends BorderPane {
                         Label catName = new Label(driver.getCategory());
                         catName.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
 
-                        Label contribBadge = new Label(driver.getFormattedPercentageChange().equals("N/A (New)") ? "Active Category" : driver.getFormattedContribution() + " of total");
-                        contribBadge.getStyleClass().setAll("badge", "badge-purple");
+                        Label contribBadge = new Label();
+                        setBadge(contribBadge, driver.getFormattedPercentageChange().equals("N/A (New)") ? "Active Category" : driver.getFormattedContribution() + " of total", "purple");
                         nameRow.getChildren().addAll(catName, contribBadge);
 
                         String shiftText = String.format("Current Spend: %s (%d transaction%s)",
@@ -2031,7 +2184,7 @@ public class MainDashboard extends BorderPane {
                         infoBox.getChildren().addAll(nameRow, shiftLbl);
 
                         Button inspectBtn = new Button("🔍 Inspect Records");
-                        inspectBtn.getStyleClass().addAll("btn", "btn-secondary");
+                        styleSecondaryButton(inspectBtn);
                         inspectBtn.setOnAction(e -> showTransactionInspectorDialog(
                                 "Category Records — " + driver.getCategory(),
                                 "Showing current records for '" + driver.getCategory() + "'.",
@@ -2050,7 +2203,7 @@ public class MainDashboard extends BorderPane {
                 for (CategoryTrend driver : comp.getTopIncreaseContributors()) {
                     HBox driverRow = new HBox(12);
                     driverRow.setAlignment(Pos.CENTER_LEFT);
-                    driverRow.getStyleClass().add("insight-card");
+                    driverRow.setStyle(STYLE_INSIGHT_CARD);
 
                     VBox infoBox = new VBox(4);
                     HBox.setHgrow(infoBox, Priority.ALWAYS);
@@ -2060,8 +2213,8 @@ public class MainDashboard extends BorderPane {
                     Label catName = new Label(driver.getCategory());
                     catName.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
 
-                    Label contribBadge = new Label(driver.getFormattedContribution() + " of net surge");
-                    contribBadge.getStyleClass().setAll("badge", "badge-trend-up");
+                    Label contribBadge = new Label();
+                    setBadge(contribBadge, driver.getFormattedContribution() + " of net surge", "trend-up");
                     nameRow.getChildren().addAll(catName, contribBadge);
 
                     String shiftText = String.format("Current: %s | Previous: %s | Shift: %s (%s)",
@@ -2075,7 +2228,7 @@ public class MainDashboard extends BorderPane {
                     infoBox.getChildren().addAll(nameRow, shiftLbl);
 
                     Button inspectBtn = new Button("🔍 Inspect Records");
-                    inspectBtn.getStyleClass().addAll("btn", "btn-secondary");
+                    styleSecondaryButton(inspectBtn);
                     inspectBtn.setOnAction(e -> showTransactionInspectorDialog(
                             "Supporting Transactions — " + driver.getCategory(),
                             "Showing current month records for '" + driver.getCategory() + "' contributing to month-over-month increase.",
@@ -2093,8 +2246,7 @@ public class MainDashboard extends BorderPane {
             anomaliesBox.getChildren().clear();
             if (intel.getAnomalies().isEmpty()) {
                 VBox cleanCard = new VBox(6);
-                cleanCard.getStyleClass().add("card");
-                cleanCard.setStyle("-fx-background-color: #F0FDF4; -fx-border-color: #86EFAC;");
+                cleanCard.setStyle(STYLE_CARD + " -fx-background-color: #F0FDF4; -fx-border-color: #86EFAC;");
                 Label cleanTitle = new Label("✓ No Spending Anomalies Detected");
                 cleanTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: #166534; -fx-font-size: 14px;");
                 Label cleanSub = new Label("All transactions and category monthly totals are within standard statistical tolerances (mean ± 2.0σ).");
@@ -2104,16 +2256,15 @@ public class MainDashboard extends BorderPane {
             } else {
                 for (SpendingAnomaly anomaly : intel.getAnomalies()) {
                     VBox card = new VBox(10);
-                    card.getStyleClass().add("anomaly-card");
+                    card.setStyle(STYLE_ANOMALY_CARD);
 
                     HBox top = new HBox(10);
                     top.setAlignment(Pos.CENTER_LEFT);
 
-                    Label typeBadge = new Label(anomaly.getType() == SpendingAnomaly.AnomalyType.TRANSACTION_SPIKE
-                            ? "🚨 TRANSACTION SPIKE"
-                            : "📈 MONTHLY SURGE");
-                    typeBadge.getStyleClass().setAll("badge",
-                            anomaly.getType() == SpendingAnomaly.AnomalyType.TRANSACTION_SPIKE ? "badge-danger" : "badge-purple");
+                    Label typeBadge = new Label();
+                    setBadge(typeBadge,
+                            anomaly.getType() == SpendingAnomaly.AnomalyType.TRANSACTION_SPIKE ? "🚨 TRANSACTION SPIKE" : "📈 MONTHLY SURGE",
+                            anomaly.getType() == SpendingAnomaly.AnomalyType.TRANSACTION_SPIKE ? "danger" : "purple");
 
                     Label catLbl = new Label(anomaly.getCategory());
                     catLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0F172A;");
@@ -2147,7 +2298,7 @@ public class MainDashboard extends BorderPane {
                     HBox.setHgrow(expLbl, Priority.ALWAYS);
 
                     Button inspectBtn = new Button("🔍 Inspect Records");
-                    inspectBtn.getStyleClass().addAll("btn", "btn-secondary");
+                    styleSecondaryButton(inspectBtn);
                     inspectBtn.setOnAction(e -> showTransactionInspectorDialog(
                             "Supporting Evidence — " + anomaly.getCategory() + " Anomaly",
                             anomaly.getExplanation(),
@@ -2183,7 +2334,7 @@ public class MainDashboard extends BorderPane {
         subLbl.setWrapText(true);
 
         TableView<Expense> table = new TableView<>();
-        table.getStyleClass().add("table-view");
+        table.setStyle(STYLE_TABLE);
         VBox.setVgrow(table, Priority.ALWAYS);
 
         TableColumn<Expense, Integer> idCol = new TableColumn<>("ID");
@@ -2227,7 +2378,7 @@ public class MainDashboard extends BorderPane {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button closeBtn = new Button("Close");
-        closeBtn.getStyleClass().addAll("btn", "btn-secondary");
+        styleSecondaryButton(closeBtn);
         closeBtn.setOnAction(e -> dialog.close());
 
         footer.getChildren().addAll(totalLbl, spacer, closeBtn);
@@ -2235,14 +2386,6 @@ public class MainDashboard extends BorderPane {
         root.getChildren().addAll(titleLbl, subLbl, table, footer);
 
         Scene scene = new Scene(root);
-        try {
-            var css = getClass().getResource("/styles/app.css");
-            if (css != null) {
-                scene.getStylesheets().add(css.toExternalForm());
-            }
-        } catch (Exception ignored) {
-        }
-
         dialog.setScene(scene);
         dialog.showAndWait();
     }
@@ -2252,14 +2395,54 @@ public class MainDashboard extends BorderPane {
     // =========================================================================
 
     private VBox createMetricChip(String title, String val, String color) {
-        VBox chip = new VBox(2);
-        chip.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-padding: 8 12;");
+        VBox chip = new VBox(4);
+        chip.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8px; -fx-border-color: #E2E8F0; -fx-border-radius: 8px; -fx-padding: 10 14;");
         Label t = new Label(title);
-        t.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;");
+        t.setStyle("-fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #64748B;");
         Label v = new Label(val);
-        v.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
+        v.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
         chip.getChildren().addAll(t, v);
         return chip;
+    }
+
+    private void configureChartAesthetics(XYChart<?, ?> chart) {
+        chart.setVerticalGridLinesVisible(false);
+        chart.setHorizontalGridLinesVisible(true);
+        chart.setAnimated(false);
+        chart.setStyle("-fx-background-color: transparent;");
+
+        chart.layoutBoundsProperty().addListener((obs, oldB, newB) -> {
+            Platform.runLater(() -> applyChartSubnodeStyles(chart));
+        });
+    }
+
+    private void applyChartSubnodeStyles(Chart chart) {
+        if (chart == null) return;
+        try {
+            chart.setStyle("-fx-background-color: transparent;");
+
+            Node plotBg = chart.lookup(".chart-plot-background");
+            if (plotBg != null) {
+                plotBg.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+            }
+            for (Node hGrid : chart.lookupAll(".chart-horizontal-grid-lines")) {
+                hGrid.setStyle("-fx-stroke: #E2E8F0; -fx-stroke-dash-array: 3 4;");
+            }
+            for (Node vGrid : chart.lookupAll(".chart-vertical-grid-lines")) {
+                vGrid.setStyle("-fx-stroke: transparent;");
+            }
+            Node legend = chart.lookup(".chart-legend");
+            if (legend != null) {
+                legend.setStyle("-fx-background-color: transparent; -fx-padding: 8 0 0 0;");
+            }
+            for (Node item : chart.lookupAll(".chart-legend-item")) {
+                item.setStyle("-fx-text-fill: #475569; -fx-font-size: 11px;");
+            }
+            for (Node axisLabel : chart.lookupAll(".axis-label")) {
+                axisLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 11px; -fx-font-weight: bold;");
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private VBox createEmptyStateLabel(String text) {
@@ -2304,9 +2487,25 @@ public class MainDashboard extends BorderPane {
                 dashboardPieChart.setManaged(!empty);
             }
 
+            int sliceIdx = 0;
             for (PieChart.Data slice : pieData) {
-                installPieSliceTooltip(slice, String.format("%s: %s", slice.getName(), MoneyUtil.formatRupees(BigDecimal.valueOf(slice.getPieValue()))));
+                String color = CHART_PALETTE[sliceIdx % CHART_PALETTE.length];
+                sliceIdx++;
+                installPieSliceTooltip(slice, String.format("%s: %s", slice.getName(), MoneyUtil.formatRupees(BigDecimal.valueOf(slice.getPieValue()))), color);
             }
+
+            Platform.runLater(() -> {
+                applyChartSubnodeStyles(dashboardPieChart);
+                int idx = 0;
+                for (Node item : dashboardPieChart.lookupAll(".chart-legend-item")) {
+                    Node symbol = item.lookup(".chart-legend-item-symbol");
+                    if (symbol != null) {
+                        String col = CHART_PALETTE[idx % CHART_PALETTE.length];
+                        symbol.setStyle("-fx-background-color: " + col + "; -fx-background-radius: 3px; -fx-padding: 4px;");
+                    }
+                    idx++;
+                }
+            });
         }
 
         if (dashboardMonthlyBarChart != null) {
@@ -2317,13 +2516,16 @@ public class MainDashboard extends BorderPane {
                 monthMap.put(ym, monthMap.getOrDefault(ym, BigDecimal.ZERO).add(exp.getAmountBigDecimal()));
             }
 
+            dashboardMonthlyBarChart.setBarGap(4);
+            dashboardMonthlyBarChart.setCategoryGap(Math.max(16, 280 / Math.max(1, monthMap.size())));
+
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName("Monthly Spending");
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM yyyy");
             for (Map.Entry<YearMonth, BigDecimal> entry : monthMap.entrySet()) {
                 String label = entry.getKey().format(fmt);
                 XYChart.Data<String, Number> data = new XYChart.Data<>(label, entry.getValue().doubleValue());
-                installDataTooltip(data, String.format("%s: %s", label, MoneyUtil.formatRupees(entry.getValue())));
+                installBarTooltip(data, String.format("%s: %s", label, MoneyUtil.formatRupees(entry.getValue())), "#2563EB");
                 series.getData().add(data);
             }
 
@@ -2335,10 +2537,11 @@ public class MainDashboard extends BorderPane {
                 dashboardMonthlyBarChart.setVisible(!empty);
                 dashboardMonthlyBarChart.setManaged(!empty);
             }
+            Platform.runLater(() -> applyChartSubnodeStyles(dashboardMonthlyBarChart));
         }
     }
 
-    private void installPieSliceTooltip(PieChart.Data slice, String tooltipText) {
+    private void installPieSliceTooltip(PieChart.Data slice, String tooltipText, String color) {
         if (slice == null) return;
         Consumer<Node> attacher = node -> {
             if (node != null) {
@@ -2346,7 +2549,12 @@ public class MainDashboard extends BorderPane {
                 tooltip.setStyle("-fx-font-size: 12px; -fx-background-color: #0F172A; -fx-text-fill: #F8FAFC; -fx-padding: 8 12; -fx-background-radius: 6;");
                 tooltip.setShowDelay(javafx.util.Duration.millis(50));
                 Tooltip.install(node, tooltip);
-                node.setStyle("-fx-cursor: hand;");
+
+                String normal = "-fx-background-color: " + color + "; -fx-border-color: #FFFFFF; -fx-border-width: 1.5px; -fx-cursor: hand;";
+                String hover = "-fx-background-color: derive(" + color + ", 18%); -fx-border-color: #FFFFFF; -fx-border-width: 2.5px; -fx-cursor: hand;";
+                node.setStyle(normal);
+                node.setOnMouseEntered(e -> node.setStyle(hover));
+                node.setOnMouseExited(e -> node.setStyle(normal));
             }
         };
 
@@ -2392,7 +2600,7 @@ public class MainDashboard extends BorderPane {
             }
 
             XYChart.Data<String, Number> data = new XYChart.Data<>(p.getLabel(), p.getAmountDouble());
-            installDataTooltip(data, p.getTooltipText());
+            installLineSymbolTooltip(data, p.getTooltipText(), "#2563EB");
             series.getData().add(data);
         }
 
@@ -2423,6 +2631,18 @@ public class MainDashboard extends BorderPane {
         }
 
         spendingLineChart.getData().setAll(series);
+
+        Consumer<Node> lineStyler = lineNode -> {
+            if (lineNode != null) {
+                lineNode.setStyle("-fx-stroke: #2563EB; -fx-stroke-width: 2.5px;");
+            }
+        };
+        if (series.getNode() != null) {
+            lineStyler.accept(series.getNode());
+        } else {
+            series.nodeProperty().addListener((obs, oldN, newN) -> lineStyler.accept(newN));
+        }
+        Platform.runLater(() -> applyChartSubnodeStyles(spendingLineChart));
     }
 
     private void renderCategoryBarChart() {
@@ -2442,16 +2662,23 @@ public class MainDashboard extends BorderPane {
             categoryBarSubtitle.setText(String.format("%d categories tracked (Ranked by expenditure)", points.size()));
         }
 
+        categoryBarChart.setBarGap(4);
+        categoryBarChart.setCategoryGap(Math.max(16, 280 / Math.max(1, points.size())));
+
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Category Spending");
 
+        int catIdx = 0;
         for (CategorySpendingPoint p : points) {
             XYChart.Data<String, Number> data = new XYChart.Data<>(p.getCategory(), p.getAmountDouble());
-            installDataTooltip(data, p.getTooltipText());
+            String color = CHART_PALETTE[catIdx % CHART_PALETTE.length];
+            catIdx++;
+            installBarTooltip(data, p.getTooltipText(), color);
             series.getData().add(data);
         }
 
         categoryBarChart.getData().setAll(series);
+        Platform.runLater(() -> applyChartSubnodeStyles(categoryBarChart));
     }
 
     private void renderMoMBarChart() {
@@ -2476,6 +2703,9 @@ public class MainDashboard extends BorderPane {
                     : "📅 Full Calendar Month Comparison: Entire month totals evaluated.");
         }
 
+        momBarChart.setBarGap(3);
+        momBarChart.setCategoryGap(Math.max(16, 280 / Math.max(1, result.getCategoryPoints().size())));
+
         XYChart.Series<String, Number> prevSeries = new XYChart.Series<>();
         prevSeries.setName(result.getPreviousSeriesName());
 
@@ -2484,18 +2714,30 @@ public class MainDashboard extends BorderPane {
 
         for (CategoryMoMPoint p : result.getCategoryPoints()) {
             XYChart.Data<String, Number> prevData = new XYChart.Data<>(p.getCategory(), p.getPreviousAmountDouble());
-            installDataTooltip(prevData, p.getPreviousTooltipText());
+            installBarTooltip(prevData, p.getPreviousTooltipText(), "#94A3B8");
             prevSeries.getData().add(prevData);
 
             XYChart.Data<String, Number> curData = new XYChart.Data<>(p.getCategory(), p.getCurrentAmountDouble());
-            installDataTooltip(curData, p.getCurrentTooltipText());
+            installBarTooltip(curData, p.getCurrentTooltipText(), "#2563EB");
             curSeries.getData().add(curData);
         }
 
         momBarChart.getData().setAll(prevSeries, curSeries);
+        Platform.runLater(() -> {
+            applyChartSubnodeStyles(momBarChart);
+            int idx = 0;
+            for (Node item : momBarChart.lookupAll(".chart-legend-item")) {
+                Node symbol = item.lookup(".chart-legend-item-symbol");
+                if (symbol != null) {
+                    String col = (idx == 0) ? "#94A3B8" : "#2563EB";
+                    symbol.setStyle("-fx-background-color: " + col + "; -fx-background-radius: 3px; -fx-padding: 4px;");
+                }
+                idx++;
+            }
+        });
     }
 
-    private void installDataTooltip(XYChart.Data<String, Number> data, String tooltipText) {
+    private void installLineSymbolTooltip(XYChart.Data<String, Number> data, String tooltipText, String color) {
         if (data == null) return;
         Consumer<Node> attacher = node -> {
             if (node != null) {
@@ -2503,7 +2745,12 @@ public class MainDashboard extends BorderPane {
                 tooltip.setStyle("-fx-font-size: 12px; -fx-background-color: #0F172A; -fx-text-fill: #F8FAFC; -fx-padding: 8 12; -fx-background-radius: 6;");
                 tooltip.setShowDelay(javafx.util.Duration.millis(50));
                 Tooltip.install(node, tooltip);
-                node.setStyle("-fx-cursor: hand;");
+
+                String normal = "-fx-background-color: " + color + ", #FFFFFF; -fx-background-insets: 0, 2; -fx-background-radius: 6px; -fx-padding: 4.5px; -fx-cursor: hand;";
+                String hover = "-fx-background-color: #1D4ED8, #FFFFFF; -fx-background-insets: 0, 2; -fx-background-radius: 8px; -fx-padding: 6.5px; -fx-cursor: hand;";
+                node.setStyle(normal);
+                node.setOnMouseEntered(e -> node.setStyle(hover));
+                node.setOnMouseExited(e -> node.setStyle(normal));
             }
         };
 
@@ -2516,5 +2763,41 @@ public class MainDashboard extends BorderPane {
                 }
             });
         }
+    }
+
+    private void installBarTooltip(XYChart.Data<String, Number> data, String tooltipText, String color) {
+        if (data == null) return;
+        Consumer<Node> attacher = node -> {
+            if (node != null) {
+                Tooltip tooltip = new Tooltip(tooltipText);
+                tooltip.setStyle("-fx-font-size: 12px; -fx-background-color: #0F172A; -fx-text-fill: #F8FAFC; -fx-padding: 8 12; -fx-background-radius: 6;");
+                tooltip.setShowDelay(javafx.util.Duration.millis(50));
+                Tooltip.install(node, tooltip);
+
+                String normal = "-fx-background-color: " + color + "; -fx-background-radius: 4 4 0 0; -fx-cursor: hand;";
+                String hover = "-fx-background-color: derive(" + color + ", -18%); -fx-background-radius: 4 4 0 0; -fx-cursor: hand;";
+                node.setStyle(normal);
+                node.setOnMouseEntered(e -> node.setStyle(hover));
+                node.setOnMouseExited(e -> node.setStyle(normal));
+            }
+        };
+
+        if (data.getNode() != null) {
+            attacher.accept(data.getNode());
+        } else {
+            data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                if (newNode != null) {
+                    attacher.accept(newNode);
+                }
+            });
+        }
+    }
+
+    private void installDataTooltip(XYChart.Data<String, Number> data, String tooltipText) {
+        installBarTooltip(data, tooltipText, "#2563EB");
+    }
+
+    private void installDataTooltip(XYChart.Data<String, Number> data, String tooltipText, String color) {
+        installBarTooltip(data, tooltipText, color != null ? color : "#2563EB");
     }
 }

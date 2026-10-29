@@ -283,12 +283,8 @@ ExpenseTrackerAI/
     │   │           │   └── MoneyUtil.java              # BigDecimal rounding and formatting utility
     │   │           │
     │   │           └── view/
-    │   │               └── MainDashboard.java          # JavaFX responsive UI controller
+    │   │               └── MainDashboard.java          # JavaFX responsive UI controller (Pure Java styling)
     │   │
-    │   └── resources/
-    │       └── styles/
-    │           └── app.css                             # Modern theme stylesheet
-    │
     └── test/
         └── java/
             └── com/
